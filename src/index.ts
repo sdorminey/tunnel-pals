@@ -19,7 +19,7 @@ class State {
 
 class Game {
   private readonly canvas: HTMLCanvasElement;
-  private readonly background: Background;
+  private readonly background: GameGrid;
   private readonly ctx: CanvasRenderingContext2D;
   private readonly state: State;
 
@@ -27,7 +27,7 @@ class Game {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.state = new State();
-    this.background = new Background(128, 128);
+    this.background = new GameGrid(128, 128);
 
     this.canvas.addEventListener("keydown", (event) => this.handleInput(event), true);
   }
@@ -73,7 +73,17 @@ enum CellType {
 }
 
 const CELL_SIZE = 8;
-class Background {
+
+class Tank {
+  public x: number;
+  public y: number;
+
+  public clearUnderTank(background: GameGrid): void {
+    background.clearCell(this.x, this.y, 4, 4);
+  }
+}
+
+class GameGrid {
   private readonly data: Array<CellType>;
   private readonly rows: number;
   private readonly cols: number;
@@ -87,18 +97,34 @@ class Background {
     }
   }
 
+  public coordsCellToPixel(pixelX: number, pixelY: number): [number, number] {
+    return [pixelX * CELL_SIZE, pixelY * CELL_SIZE];
+  }
+
+  public coordsPixelToCell(cellX: number, cellY: number): [number, number] {
+    return [Math.floor(cellX / CELL_SIZE), Math.floor(cellY / CELL_SIZE)];
+  }
+
   public get maxX(): number {
-    return this.rows * CELL_SIZE;
+    return this.cols * CELL_SIZE;
   }
 
   public get maxY(): number {
-    return this.cols * CELL_SIZE;
+    return this.rows * CELL_SIZE;
+  }
+
+  public clearCell(x: number, y: number, w = 1, h = 1): void {
+    for (let row = y; row < y + h; row++) {
+      for (let col = x; col < x + w; col++) {
+        this.data[row * this.rows + col] = CellType.Void;
+      }
+    }
   }
 
   public render(ctx: CanvasRenderingContext2D) {
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
-        ctx.fillStyle = Background.colorForCell(this.data[row * this.rows + col]);
+        ctx.fillStyle = GameGrid.colorForCell(this.data[row * this.rows + col]);
         ctx.fillRect(CELL_SIZE * row, CELL_SIZE * col, CELL_SIZE, CELL_SIZE);
       }
     }
