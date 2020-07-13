@@ -66,6 +66,36 @@ enum CellType {
   GreenTankBody = 3
 }
 
+enum CellMoveType {
+  None,
+  SlowsTank,
+  Unbreakable
+}
+
+class GameInfo {
+  public static moveTypeForCell(type: CellType): CellMoveType {
+    switch (type) {
+      case CellType.Void:
+        return CellMoveType.None;
+      default:
+        return CellMoveType.SlowsTank;
+    }
+  }
+
+  public static colorForCell(type: CellType): string {
+    switch (type) {
+      case CellType.Void:
+        return "#000000";
+      case CellType.LightSand:
+        return "#fc9003";
+      case CellType.DarkSand:
+        return "#7d4700";
+      case CellType.GreenTankBody:
+        return "#00ff00";
+    }
+  }
+}
+
 enum TankAction {
   MoveLeft,
   MoveRight,
@@ -81,6 +111,7 @@ class Tank {
 
   private readonly grid: GameGrid;
   private sprite: CellType[];
+  private delay = 0;
 
   private readonly tankRight: CellType[] = [
     CellType.GreenTankBody, CellType.GreenTankBody, CellType.Transparent,
@@ -112,22 +143,38 @@ class Tank {
   }
 
   public takeAction(action: TankAction): void {
+    if (this.delay > 0) {
+      this.delay--;
+      return;
+    }
+
+    let newX = this.x, newY = this.y;
     switch (action) {
       case TankAction.MoveLeft:
         this.sprite = this.tankLeft;
-        this.x--;
+        newX--;
         break;
       case TankAction.MoveRight:
         this.sprite = this.tankRight;
-        this.x++;
+        newX++;
         break;
       case TankAction.MoveUp:
         this.sprite = this.tankUp;
-        this.y--;
+        newY--;
         break;
       case TankAction.MoveDown:
         this.sprite = this.tankDown;
-        this.y++;
+        newY++;
+        break;
+    }
+
+    switch (this.grid.canMoveThroughBox(newX, newY, 3, 3)) {
+      case CellMoveType.Unbreakable:
+        break;
+      case CellMoveType.SlowsTank:
+        this.delay = 3;
+      case CellMoveType.None:
+        this.x = newX; this.y = newY;
         break;
     }
 
@@ -192,7 +239,7 @@ class GameGrid {
       return;
     }
 
-    ctx.fillStyle = GameGrid.colorForCell(type);
+    ctx.fillStyle = GameInfo.colorForCell(type);
     ctx.fillRect(CELL_SIZE * x, CELL_SIZE * y, CELL_SIZE, CELL_SIZE);
   }
 
@@ -200,17 +247,15 @@ class GameGrid {
     this.drawSprite(ctx, 0, 0, this.data, this.cols);
   }
 
-  private static colorForCell(type: CellType): string {
-    switch (type) {
-      case CellType.Void:
-        return "#000000";
-      case CellType.LightSand:
-        return "#fc9003";
-      case CellType.DarkSand:
-        return "#7d4700";
-      case CellType.GreenTankBody:
-        return "#00ff00";
+  public canMoveThroughBox(x: number, y: number, w: number, h: number): CellMoveType {
+    let moveType = CellMoveType.None;
+    for (let row = y; row < y + h; row++) {
+      for (let col = x; col < x + w; col++) {
+        moveType = Math.max(moveType, GameInfo.moveTypeForCell(this.data[row * this.rows + col]));
+      }
     }
+
+    return moveType;
   }
 }
 
@@ -218,4 +263,3 @@ class GameGrid {
 const c = document.getElementById('canvas') as HTMLCanvasElement;
 const game = new Game(c);
 game.render();
-//window.setInterval(() => game.render(), 50);
