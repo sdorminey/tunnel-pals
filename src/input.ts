@@ -15,6 +15,8 @@ export class InputController {
     switch (this.keyboardState) {
       case KeyboardState.None:
         return null;
+
+      // Cardinal directions:
       case KeyboardState.Left:
         return TankAction.MoveLeft;
       case KeyboardState.Right:
@@ -23,6 +25,16 @@ export class InputController {
         return TankAction.MoveUp;
       case KeyboardState.Down:
         return TankAction.MoveDown;
+
+      // Diagonal directions:
+      case KeyboardState.Left | KeyboardState.Up:
+        return TankAction.MoveUpLeft;
+      case KeyboardState.Up | KeyboardState.Right:
+        return TankAction.MoveUpRight;
+      case KeyboardState.Down | KeyboardState.Left:
+        return TankAction.MoveDownLeft;
+      case KeyboardState.Down | KeyboardState.Right:
+        return TankAction.MoveDownRight;
     }
   }
 

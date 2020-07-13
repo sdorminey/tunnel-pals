@@ -34,6 +34,23 @@ export default class Tank {
         this.sprite = Sprites.tankDown;
         newY++;
         break;
+
+      case TankAction.MoveUpLeft:
+        this.sprite = Sprites.tankUpLeft;
+        newX--; newY--;
+        break;
+      case TankAction.MoveUpRight:
+        this.sprite = Sprites.tankUpRight;
+        newX++; newY--;
+        break;
+      case TankAction.MoveDownLeft:
+        this.sprite = Sprites.tankDownLeft;
+        newY++; newX--;
+        break;
+      case TankAction.MoveDownRight:
+        this.sprite = Sprites.tankDownRight;
+        newY++; newX++;
+        break;
     }
 
     switch (this.grid.canMoveThroughBox(newX, newY, 3, 3)) {

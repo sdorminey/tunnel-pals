@@ -16,7 +16,11 @@ export enum TankAction {
   MoveLeft = 1,
   MoveRight,
   MoveUp,
-  MoveDown
+  MoveDown,
+  MoveUpLeft,
+  MoveUpRight,
+  MoveDownLeft,
+  MoveDownRight
 }
 
 export class GameInfo {
