@@ -35,8 +35,14 @@ class Game {
   public render(): void {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.resetTransform();
-    this.ctx.translate(this.state.x, this.state.y);
+    let cameraX = Math.min(Math.max(0, this.state.x - this.canvas.width / 2), this.background.maxX - this.canvas.width);
+    let cameraY = Math.min(Math.max(0, this.state.y - this.canvas.height / 2), this.background.maxY - this.canvas.height);
+    this.ctx.translate(-cameraX, -cameraY);
     this.background.render(this.ctx);
+    this.ctx.beginPath();
+    this.ctx.strokeStyle = "#ff0000";
+    this.ctx.arc(this.state.x, this.state.y, 16, 0, 2 * Math.PI);
+    this.ctx.stroke();
   }
 
   private handleInput(event: KeyboardEvent): void {
@@ -66,7 +72,7 @@ enum CellType {
   DarkSand = 2
 }
 
-const CELL_SIZE = 16;
+const CELL_SIZE = 8;
 class Background {
   private readonly data: Array<CellType>;
   private readonly rows: number;
@@ -79,6 +85,14 @@ class Background {
     for (let k = 0; k < this.data.length; k++) {
       this.data[k] = Math.floor(Math.random() * 3) as CellType;
     }
+  }
+
+  public get maxX(): number {
+    return this.rows * CELL_SIZE;
+  }
+
+  public get maxY(): number {
+    return this.cols * CELL_SIZE;
   }
 
   public render(ctx: CanvasRenderingContext2D) {
