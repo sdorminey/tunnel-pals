@@ -33,30 +33,25 @@ class Game {
     let cameraX = Math.min(Math.max(0, spriteX - this.canvas.width / 2), this.background.maxX - this.canvas.width);
     let cameraY = Math.min(Math.max(0, spriteY - this.canvas.height / 2), this.background.maxY - this.canvas.height);
     this.ctx.translate(-cameraX, -cameraY);
-    this.tank.clearUnderTank();
     this.background.render(this.ctx);
     this.tank.render(this.ctx);
-    this.ctx.beginPath();
-    this.ctx.strokeStyle = "#ff0000";
-    this.ctx.arc(spriteX, spriteY, 16, 0, 2 * Math.PI);
-    this.ctx.stroke();
   }
 
   private handleInput(event: KeyboardEvent): void {
     if (event.keyCode == 188) {
-      this.tank.y -= 1;
+      this.tank.takeAction(TankAction.MoveUp);
     }
 
     if (event.keyCode == 65) {
-      this.tank.x -= 1;
+      this.tank.takeAction(TankAction.MoveLeft);
     }
 
     if (event.keyCode == 69) {
-      this.tank.x += 1;
+      this.tank.takeAction(TankAction.MoveRight);
     }
 
     if (event.keyCode == 79) {
-      this.tank.y += 1;
+      this.tank.takeAction(TankAction.MoveDown);
     }
 
     this.render();
@@ -64,35 +59,86 @@ class Game {
 }
 
 enum CellType {
+  Transparent = -1,
   Void = 0,
   LightSand = 1,
   DarkSand = 2,
   GreenTankBody = 3
 }
 
+enum TankAction {
+  MoveLeft,
+  MoveRight,
+  MoveUp,
+  MoveDown
+}
+
 const CELL_SIZE = 8;
 
 class Tank {
-  private readonly grid: GameGrid;
-  private readonly sprite: CellType[] = [
-    CellType.GreenTankBody, CellType.GreenTankBody,
-    CellType.GreenTankBody, CellType.GreenTankBody
-  ];
-
   public x = 0;
   public y = 0;
 
+  private readonly grid: GameGrid;
+  private sprite: CellType[];
+
+  private readonly tankRight: CellType[] = [
+    CellType.GreenTankBody, CellType.GreenTankBody, CellType.Transparent,
+    CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
+    CellType.GreenTankBody, CellType.GreenTankBody, CellType.Transparent
+  ];
+
+  private readonly tankUp: CellType[] = [
+    CellType.Transparent, CellType.GreenTankBody, CellType.Transparent,
+    CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
+    CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
+  ]
+
+  private readonly tankLeft: CellType[] = [
+    CellType.Transparent, CellType.GreenTankBody, CellType.GreenTankBody,
+    CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
+    CellType.Transparent, CellType.GreenTankBody, CellType.GreenTankBody,
+  ]
+
+  private readonly tankDown: CellType[] = [
+    CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
+    CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
+    CellType.Transparent, CellType.GreenTankBody, CellType.Transparent,
+  ]
+
   constructor(grid: GameGrid) {
     this.grid = grid;
+    this.sprite = this.tankRight;
+  }
+
+  public takeAction(action: TankAction): void {
+    switch (action) {
+      case TankAction.MoveLeft:
+        this.sprite = this.tankLeft;
+        this.x--;
+        break;
+      case TankAction.MoveRight:
+        this.sprite = this.tankRight;
+        this.x++;
+        break;
+      case TankAction.MoveUp:
+        this.sprite = this.tankUp;
+        this.y--;
+        break;
+      case TankAction.MoveDown:
+        this.sprite = this.tankDown;
+        this.y++;
+        break;
+    }
+
+    // Clear under the tank.
+    this.grid.clearCell(this.x, this.y, 3, 3);
   }
 
   public render(ctx: CanvasRenderingContext2D): void {
-    this.grid.drawSprite(ctx, this.x, this.y, this.sprite, 2);
+    this.grid.drawSprite(ctx, this.x, this.y, this.sprite, 3);
   }
 
-  public clearUnderTank(): void {
-    this.grid.clearCell(this.x, this.y, 4, 4);
-  }
 }
 
 class GameGrid {
@@ -142,6 +188,10 @@ class GameGrid {
   }
 
   public drawCell(ctx: CanvasRenderingContext2D, x: number, y: number, type: CellType): void {
+    if (type == CellType.Transparent) {
+      return;
+    }
+
     ctx.fillStyle = GameGrid.colorForCell(type);
     ctx.fillRect(CELL_SIZE * x, CELL_SIZE * y, CELL_SIZE, CELL_SIZE);
   }
