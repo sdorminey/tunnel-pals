@@ -143,11 +143,6 @@ class Tank {
   }
 
   public takeAction(action: TankAction): void {
-    if (this.delay > 0) {
-      this.delay--;
-      return;
-    }
-
     let newX = this.x, newY = this.y;
     switch (action) {
       case TankAction.MoveLeft:
@@ -172,8 +167,15 @@ class Tank {
       case CellMoveType.Unbreakable:
         break;
       case CellMoveType.SlowsTank:
-        this.delay = 3;
+        if (this.delay == 0) {
+          this.delay = 3;
+          this.x = newX; this.y = newY;
+        } else {
+          this.delay--;
+        }
+        break;
       case CellMoveType.None:
+        this.delay = 0;
         this.x = newX; this.y = newY;
         break;
     }
