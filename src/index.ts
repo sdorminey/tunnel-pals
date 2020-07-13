@@ -11,25 +11,17 @@ function component() {
 document.body.appendChild(component());
 
 
-class State {
-  public x = 0;
-  public y = 0;
-  public speed = 5;
-}
-
 class Game {
   private readonly canvas: HTMLCanvasElement;
   private readonly background: GameGrid;
   private readonly ctx: CanvasRenderingContext2D;
-  private readonly state: State;
   private readonly tank: Tank;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
-    this.state = new State();
     this.background = new GameGrid(128, 128);
-    this.tank = new Tank();
+    this.tank = new Tank(this.background);
 
     this.canvas.addEventListener("keydown", (event) => this.handleInput(event), true);
   }
@@ -41,8 +33,9 @@ class Game {
     let cameraX = Math.min(Math.max(0, spriteX - this.canvas.width / 2), this.background.maxX - this.canvas.width);
     let cameraY = Math.min(Math.max(0, spriteY - this.canvas.height / 2), this.background.maxY - this.canvas.height);
     this.ctx.translate(-cameraX, -cameraY);
-    this.tank.clearUnderTank(this.background);
+    this.tank.clearUnderTank();
     this.background.render(this.ctx);
+    this.tank.render(this.ctx);
     this.ctx.beginPath();
     this.ctx.strokeStyle = "#ff0000";
     this.ctx.arc(spriteX, spriteY, 16, 0, 2 * Math.PI);
@@ -73,17 +66,32 @@ class Game {
 enum CellType {
   Void = 0,
   LightSand = 1,
-  DarkSand = 2
+  DarkSand = 2,
+  GreenTankBody = 3
 }
 
 const CELL_SIZE = 8;
 
 class Tank {
+  private readonly grid: GameGrid;
+  private readonly sprite: CellType[] = [
+    CellType.GreenTankBody, CellType.GreenTankBody,
+    CellType.GreenTankBody, CellType.GreenTankBody
+  ];
+
   public x = 0;
   public y = 0;
 
-  public clearUnderTank(background: GameGrid): void {
-    background.clearCell(this.x, this.y, 4, 4);
+  constructor(grid: GameGrid) {
+    this.grid = grid;
+  }
+
+  public render(ctx: CanvasRenderingContext2D): void {
+    this.grid.drawSprite(ctx, this.x, this.y, this.sprite, 2);
+  }
+
+  public clearUnderTank(): void {
+    this.grid.clearCell(this.x, this.y, 4, 4);
   }
 }
 
@@ -125,13 +133,21 @@ class GameGrid {
     }
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
-    for (let row = 0; row < this.rows; row++) {
-      for (let col = 0; col < this.cols; col++) {
-        ctx.fillStyle = GameGrid.colorForCell(this.data[row * this.rows + col]);
-        ctx.fillRect(CELL_SIZE * col, CELL_SIZE * row, CELL_SIZE, CELL_SIZE);
+  public drawSprite(ctx: CanvasRenderingContext2D, x: number, y: number, sprite: CellType[], stride: number) {
+    for (let row = 0; row < sprite.length / stride; row++) {
+      for (let col = 0; col < stride; col++) {
+        this.drawCell(ctx, col + x, row + y, sprite[row * stride + col]);
       }
     }
+  }
+
+  public drawCell(ctx: CanvasRenderingContext2D, x: number, y: number, type: CellType): void {
+    ctx.fillStyle = GameGrid.colorForCell(type);
+    ctx.fillRect(CELL_SIZE * x, CELL_SIZE * y, CELL_SIZE, CELL_SIZE);
+  }
+
+  public render(ctx: CanvasRenderingContext2D): void {
+    this.drawSprite(ctx, 0, 0, this.data, this.cols);
   }
 
   private static colorForCell(type: CellType): string {
@@ -142,6 +158,8 @@ class GameGrid {
         return "#fc9003";
       case CellType.DarkSand:
         return "#7d4700";
+      case CellType.GreenTankBody:
+        return "#00ff00";
     }
   }
 }
