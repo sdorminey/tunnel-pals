@@ -16,14 +16,17 @@ class Game {
   private readonly background: GameGrid;
   private readonly ctx: CanvasRenderingContext2D;
   private readonly tank: Tank;
+  private readonly controller: InputController;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.background = new GameGrid(128, 128);
     this.tank = new Tank(this.background);
+    this.controller = new InputController();
 
     this.canvas.addEventListener("keydown", (event) => this.handleInput(event), true);
+    this.canvas.addEventListener("keyup", (event) => this.handleInput(event), true);
   }
 
   public render(): void {
@@ -38,23 +41,63 @@ class Game {
   }
 
   private handleInput(event: KeyboardEvent): void {
-    if (event.keyCode == 188) {
-      this.tank.takeAction(TankAction.MoveUp);
-    }
-
-    if (event.keyCode == 65) {
-      this.tank.takeAction(TankAction.MoveLeft);
-    }
-
-    if (event.keyCode == 69) {
-      this.tank.takeAction(TankAction.MoveRight);
-    }
-
-    if (event.keyCode == 79) {
-      this.tank.takeAction(TankAction.MoveDown);
+    this.controller.receiveInput(event);
+    const nextAction = this.controller.getInputAction();
+    if (nextAction) {
+      this.tank.takeAction(nextAction);
     }
 
     this.render();
+  }
+}
+
+enum KeyboardState {
+  None = 0,
+  Up = 1,
+  Left = 2,
+  Down = 4,
+  Right = 8
+}
+
+class InputController {
+  private keyboardState = KeyboardState.None;
+
+  public getInputAction(): TankAction | null {
+    switch (this.keyboardState) {
+      case KeyboardState.None:
+        return null;
+      case KeyboardState.Left:
+        return TankAction.MoveLeft;
+      case KeyboardState.Right:
+        return TankAction.MoveRight;
+      case KeyboardState.Up:
+        return TankAction.MoveUp;
+      case KeyboardState.Down:
+        return TankAction.MoveDown;
+    }
+  }
+
+  public receiveInput(event: KeyboardEvent): void {
+    if (event.repeat) {
+      console.log("Discarding repeat.");
+      return;
+    }
+
+    if (event.keyCode == 188) { // W
+      this.keyboardState ^= KeyboardState.Up;
+    }
+
+    if (event.keyCode == 65) { // A
+      this.keyboardState ^= KeyboardState.Left;
+    }
+
+    if (event.keyCode == 79) { // S
+      this.keyboardState ^= KeyboardState.Down;
+    }
+
+    if (event.keyCode == 69) { // D
+      this.keyboardState ^= KeyboardState.Right;
+    }
   }
 }
 
@@ -97,7 +140,7 @@ class GameInfo {
 }
 
 enum TankAction {
-  MoveLeft,
+  MoveLeft = 1,
   MoveRight,
   MoveUp,
   MoveDown
