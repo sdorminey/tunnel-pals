@@ -19,6 +19,7 @@ class State {
 
 class Game {
   private readonly canvas: HTMLCanvasElement;
+  private readonly background: Background;
   private readonly ctx: CanvasRenderingContext2D;
   private readonly state: State;
 
@@ -26,14 +27,16 @@ class Game {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.state = new State();
+    this.background = new Background(128, 128);
 
     this.canvas.addEventListener("keydown", (event) => this.handleInput(event), true);
   }
 
   public render(): void {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx.fillStyle = "#ff0000";
-    this.ctx.fillRect(this.state.x, this.state.y, 320, 240);
+    this.ctx.resetTransform();
+    this.ctx.translate(this.state.x, this.state.y);
+    this.background.render(this.ctx);
   }
 
   private handleInput(event: KeyboardEvent): void {
@@ -102,4 +105,5 @@ class Background {
 
 const c = document.getElementById('canvas') as HTMLCanvasElement;
 const game = new Game(c);
+game.render();
 //window.setInterval(() => game.render(), 50);
