@@ -22,12 +22,14 @@ class Game {
   private readonly background: GameGrid;
   private readonly ctx: CanvasRenderingContext2D;
   private readonly state: State;
+  private readonly tank: Tank;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.state = new State();
     this.background = new GameGrid(128, 128);
+    this.tank = new Tank();
 
     this.canvas.addEventListener("keydown", (event) => this.handleInput(event), true);
   }
@@ -35,31 +37,33 @@ class Game {
   public render(): void {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.resetTransform();
-    let cameraX = Math.min(Math.max(0, this.state.x - this.canvas.width / 2), this.background.maxX - this.canvas.width);
-    let cameraY = Math.min(Math.max(0, this.state.y - this.canvas.height / 2), this.background.maxY - this.canvas.height);
+    var [spriteX, spriteY] = this.background.coordsCellToPixel(this.tank.x, this.tank.y);
+    let cameraX = Math.min(Math.max(0, spriteX - this.canvas.width / 2), this.background.maxX - this.canvas.width);
+    let cameraY = Math.min(Math.max(0, spriteY - this.canvas.height / 2), this.background.maxY - this.canvas.height);
     this.ctx.translate(-cameraX, -cameraY);
+    this.tank.clearUnderTank(this.background);
     this.background.render(this.ctx);
     this.ctx.beginPath();
     this.ctx.strokeStyle = "#ff0000";
-    this.ctx.arc(this.state.x, this.state.y, 16, 0, 2 * Math.PI);
+    this.ctx.arc(spriteX, spriteY, 16, 0, 2 * Math.PI);
     this.ctx.stroke();
   }
 
   private handleInput(event: KeyboardEvent): void {
     if (event.keyCode == 188) {
-      this.state.y -= this.state.speed;
+      this.tank.y -= 1;
     }
 
     if (event.keyCode == 65) {
-      this.state.x -= this.state.speed;
+      this.tank.x -= 1;
     }
 
     if (event.keyCode == 69) {
-      this.state.x += this.state.speed;
+      this.tank.x += 1;
     }
 
     if (event.keyCode == 79) {
-      this.state.y += this.state.speed;
+      this.tank.y += 1;
     }
 
     this.render();
@@ -75,8 +79,8 @@ enum CellType {
 const CELL_SIZE = 8;
 
 class Tank {
-  public x: number;
-  public y: number;
+  public x = 0;
+  public y = 0;
 
   public clearUnderTank(background: GameGrid): void {
     background.clearCell(this.x, this.y, 4, 4);
@@ -125,7 +129,7 @@ class GameGrid {
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
         ctx.fillStyle = GameGrid.colorForCell(this.data[row * this.rows + col]);
-        ctx.fillRect(CELL_SIZE * row, CELL_SIZE * col, CELL_SIZE, CELL_SIZE);
+        ctx.fillRect(CELL_SIZE * col, CELL_SIZE * row, CELL_SIZE, CELL_SIZE);
       }
     }
   }
