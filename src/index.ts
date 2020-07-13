@@ -57,7 +57,49 @@ class Game {
   }
 }
 
+enum CellType {
+  Void = 0,
+  LightSand = 1,
+  DarkSand = 2
+}
+
+const CELL_SIZE = 16;
+class Background {
+  private readonly data: Array<CellType>;
+  private readonly rows: number;
+  private readonly cols: number;
+
+  constructor(rows: number, cols: number) {
+    this.rows = rows;
+    this.cols = cols;
+    this.data = Array<CellType>(rows * cols);
+    for (let k = 0; k < this.data.length; k++) {
+      this.data[k] = Math.floor(Math.random() * 3) as CellType;
+    }
+  }
+
+  public render(ctx: CanvasRenderingContext2D) {
+    for (let row = 0; row < this.rows; row++) {
+      for (let col = 0; col < this.cols; col++) {
+        ctx.fillStyle = Background.colorForCell(this.data[row * this.rows + col]);
+        ctx.fillRect(CELL_SIZE * row, CELL_SIZE * col, CELL_SIZE, CELL_SIZE);
+      }
+    }
+  }
+
+  private static colorForCell(type: CellType): string {
+    switch (type) {
+      case CellType.Void:
+        return "#000000";
+      case CellType.LightSand:
+        return "#fc9003";
+      case CellType.DarkSand:
+        return "#7d4700";
+    }
+  }
+}
+
 
 const c = document.getElementById('canvas') as HTMLCanvasElement;
 const game = new Game(c);
-window.setInterval(() => game.render(), 50);
+//window.setInterval(() => game.render(), 50);
