@@ -6,13 +6,13 @@ export default class GameGrid {
   private readonly rows: number;
   private readonly cols: number;
 
-  constructor(rows: number, cols: number) {
+  constructor(rows: number, cols: number, data: CellType[]) {
     this.rows = rows;
     this.cols = cols;
-    this.data = Array<CellType>(rows * cols);
-    for (let k = 0; k < this.data.length; k++) {
-      this.data[k] = Math.floor(Math.random() * 3) as CellType;
-    }
+    this.data = data;
+    //for (let k = 0; k < this.data.length; k++) {
+    //  this.data[k] = Math.floor(Math.random() * 3) as CellType;
+    //}
   }
 
   public coordsCellToPixel(pixelX: number, pixelY: number): [number, number] {

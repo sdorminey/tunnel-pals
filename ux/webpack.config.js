@@ -17,7 +17,13 @@ module.exports = {
   },
   devtool: 'inline-source-map',
   devServer: {
-    contentBase: './dist'
+    contentBase: './dist',
+    proxy: {
+      '/back': {
+        target: 'ws://localhost:8765',
+        ws: true
+      }
+    }
   },
   output: {
     filename: 'main.js',

@@ -5,6 +5,7 @@ import Tank from './tank';
 import Shots from './shots';
 import { GameInfo } from './game-info';
 import Sprites from './sprites';
+import { BaseMessage, MessageType, GridDataMessage } from './messages';
 
 function component() {
   const element = document.createElement('div');
@@ -19,22 +20,20 @@ document.body.appendChild(component());
 
 class Game {
   private readonly canvas: HTMLCanvasElement;
-  private readonly grid: GameGrid;
+  private grid: GameGrid;
   private readonly ctx: CanvasRenderingContext2D;
-  private readonly tank: Tank;
+  private tank: Tank;
   private readonly shots: Shots;
   private readonly controller: InputController;
+  private readonly ws: WebSocket;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
-    this.grid = new GameGrid(128, 128);
-    this.tank = new Tank(this.grid);
     this.controller = new InputController();
     this.shots = new Shots();
-
-    this.canvas.addEventListener("keydown", (event) => this.handleInput(event), true);
-    this.canvas.addEventListener("keyup", (event) => this.handleInput(event), true);
+    this.ws = new WebSocket("ws://127.0.0.1:8080/back");
+    this.ws.onmessage = (event) => this.onMessage(event);
   }
 
   public render(): void {
@@ -66,9 +65,29 @@ class Game {
   private handleInput(event: KeyboardEvent): void {
     this.controller.receiveInput(event);
   }
+
+  private start(): void {
+    this.canvas.addEventListener("keydown", (event) => this.handleInput(event), true);
+    this.canvas.addEventListener("keyup", (event) => this.handleInput(event), true);
+    game.render();
+    window.setInterval(() => game.updateLoop(), 25);
+  }
+
+  private onMessage(event: MessageEvent): void {
+    const untyped = <BaseMessage>(JSON.parse(event.data));
+    switch (untyped.type) {
+      case MessageType.GridData:
+        const message = <GridDataMessage>(untyped);
+        this.grid = new GameGrid(message.rows, message.cols, message.grid);
+        this.tank = new Tank(this.grid);
+        this.start();
+        break;
+      default:
+        console.log("No idea what this message was!");
+        break;
+    }
+  }
 }
 
 const c = document.getElementById('canvas') as HTMLCanvasElement;
 const game = new Game(c);
-game.render();
-window.setInterval(() => game.updateLoop(), 25);
