@@ -3,6 +3,8 @@ import { InputController } from './input';
 import GameGrid from './game-grid';
 import Tank from './tank';
 import Shots from './shots';
+import { GameInfo } from './game-info';
+import Sprites from './sprites';
 
 function component() {
   const element = document.createElement('div');
@@ -46,22 +48,27 @@ class Game {
     this.tank.render(this.ctx);
   }
 
-  private handleInput(event: KeyboardEvent): void {
-    this.controller.receiveInput(event);
+  public updateLoop(): void {
     const nextAction = this.controller.getTankAction();
     if (nextAction) {
       this.tank.takeAction(nextAction);
     }
 
     if (this.controller.isShooting()) {
-      this.shots.add(this.tank.x, this.tank.y, this.tank.direction);
+      const [gunX, gunY] = Sprites.getGunOffset(this.tank.direction);
+      this.shots.add(this.tank.x + gunX, this.tank.y + gunY, this.tank.direction);
     }
 
     this.shots.tick(this.grid);
     this.render();
+  }
+
+  private handleInput(event: KeyboardEvent): void {
+    this.controller.receiveInput(event);
   }
 }
 
 const c = document.getElementById('canvas') as HTMLCanvasElement;
 const game = new Game(c);
 game.render();
+window.setInterval(() => game.updateLoop(), 25);
