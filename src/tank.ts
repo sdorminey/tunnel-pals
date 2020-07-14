@@ -5,6 +5,7 @@ import Sprites from "./sprites";
 export default class Tank {
   public x = 0;
   public y = 0;
+  public direction = TankAction.MoveRight;
 
   private readonly grid: GameGrid;
   private sprite: CellType[];
@@ -15,8 +16,10 @@ export default class Tank {
     this.sprite = Sprites.tankRight;
   }
 
+
   public takeAction(action: TankAction): void {
     let newX = this.x, newY = this.y;
+    this.direction = action;
     switch (action) {
       case TankAction.MoveLeft:
         this.sprite = Sprites.tankLeft;

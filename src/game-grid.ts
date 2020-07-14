@@ -39,6 +39,10 @@ export default class GameGrid {
     }
   }
 
+  public setCell(x: number, y: number, type: CellType): void {
+    this.data[y * this.rows + x] = type;
+  }
+
   public drawSprite(ctx: CanvasRenderingContext2D, x: number, y: number, sprite: CellType[], stride: number) {
     for (let row = 0; row < sprite.length / stride; row++) {
       for (let col = 0; col < stride; col++) {
@@ -60,7 +64,7 @@ export default class GameGrid {
     this.drawSprite(ctx, 0, 0, this.data, this.cols);
   }
 
-  public canMoveThroughBox(x: number, y: number, w: number, h: number): CellMoveType {
+  public canMoveThroughBox(x: number, y: number, w = 1, h = 1): CellMoveType {
     let moveType = CellMoveType.None;
     for (let row = y; row < y + h; row++) {
       for (let col = x; col < x + w; col++) {

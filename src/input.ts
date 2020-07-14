@@ -5,14 +5,15 @@ enum KeyboardState {
   Up = 1,
   Left = 2,
   Down = 4,
-  Right = 8
+  Right = 8,
+  Shooting = 16
 }
 
 export class InputController {
   private keyboardState = KeyboardState.None;
 
-  public getInputAction(): TankAction | null {
-    switch (this.keyboardState) {
+  public getTankAction(): TankAction | null {
+    switch (this.keyboardState & 15) {
       case KeyboardState.None:
         return null;
 
@@ -38,6 +39,10 @@ export class InputController {
     }
   }
 
+  public isShooting(): boolean {
+    return !!(this.keyboardState & KeyboardState.Shooting);
+  }
+
   public receiveInput(event: KeyboardEvent): void {
     if (event.repeat) {
       return;
@@ -57,6 +62,10 @@ export class InputController {
 
     if (event.keyCode == 69) { // D
       this.keyboardState ^= KeyboardState.Right;
+    }
+
+    if (event.keyCode == 32) {
+      this.keyboardState ^= KeyboardState.Shooting;
     }
   }
 }
