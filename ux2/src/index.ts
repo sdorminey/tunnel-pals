@@ -1,29 +1,14 @@
 import * as _ from 'lodash';
 import { InputController } from './input';
 import GameGrid from './game-grid';
+import { BaseMessage, MessageType, GridDataMessage, TankMoveMessage, TankInputMessage } from './messages';
 import Tank from './tank';
-import Shots from './shots';
-import { GameInfo } from './game-info';
-import Sprites from './sprites';
-import { BaseMessage, MessageType, GridDataMessage } from './messages';
-
-function component() {
-  const element = document.createElement('div');
-
-  element.innerHTML = _.join(['Hello', 'webpack'], ' ');
-
-  return element;
-}
-
-document.body.appendChild(component());
-
 
 class Game {
   private readonly canvas: HTMLCanvasElement;
   private grid: GameGrid;
-  private readonly ctx: CanvasRenderingContext2D;
   private tank: Tank;
-  private readonly shots: Shots;
+  private readonly ctx: CanvasRenderingContext2D;
   private readonly controller: InputController;
   private readonly ws: WebSocket;
 
@@ -31,7 +16,6 @@ class Game {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.controller = new InputController();
-    this.shots = new Shots();
     this.ws = new WebSocket("ws://127.0.0.1:8080/back");
     this.ws.onmessage = (event) => this.onMessage(event);
   }
@@ -48,22 +32,25 @@ class Game {
   }
 
   public updateLoop(): void {
-    const nextAction = this.controller.getTankAction();
-    if (nextAction) {
-      this.tank.takeAction(nextAction);
-    }
-
-    if (this.controller.isShooting()) {
-      const [gunX, gunY] = Sprites.getGunOffset(this.tank.direction);
-      this.shots.add(this.tank.x + gunX, this.tank.y + gunY, this.tank.direction);
-    }
-
-    this.shots.tick(this.grid);
     this.render();
   }
 
   private handleInput(event: KeyboardEvent): void {
     this.controller.receiveInput(event);
+    const direction = this.controller.getTankDirection();
+    if (direction) {
+      this.ws.send(JSON.stringify(<TankInputMessage>{
+        direction: direction,
+        moving: true,
+        type: MessageType.TankInput
+      }));
+    } else {
+      this.ws.send(JSON.stringify(<TankInputMessage>{
+        direction: null,
+        moving: false,
+        type: MessageType.TankInput
+      }))
+    }
   }
 
   private start(): void {
@@ -77,11 +64,20 @@ class Game {
     const untyped = <BaseMessage>(JSON.parse(event.data));
     switch (untyped.type) {
       case MessageType.GridData:
-        const message = <GridDataMessage>(untyped);
-        this.grid = new GameGrid(message.rows, message.cols, message.grid);
-        this.tank = new Tank(this.grid);
-        this.start();
-        break;
+        {
+          const message = <GridDataMessage>(untyped);
+          this.grid = new GameGrid(message.rows, message.cols, message.grid);
+          this.tank = new Tank(this.grid);
+          this.start();
+          break;
+        }
+      case MessageType.TankMove:
+        {
+          const message = <TankMoveMessage>(untyped);
+          this.tank.direction = message.direction;
+          this.tank.x = message.x;
+          this.tank.y = message.y;
+        }
       default:
         console.log("No idea what this message was!");
         break;

@@ -1,4 +1,5 @@
 import { TankAction } from './game-info';
+import { TankDirection } from './messages';
 
 enum KeyboardState {
   None = 0,
@@ -12,30 +13,30 @@ enum KeyboardState {
 export class InputController {
   private keyboardState = KeyboardState.None;
 
-  public getTankAction(): TankAction | null {
+  public getTankDirection(): TankDirection | null {
     switch (this.keyboardState & 15) {
       case KeyboardState.None:
         return null;
 
       // Cardinal directions:
       case KeyboardState.Left:
-        return TankAction.MoveLeft;
+        return TankDirection.Left;
       case KeyboardState.Right:
-        return TankAction.MoveRight;
+        return TankDirection.Right;
       case KeyboardState.Up:
-        return TankAction.MoveUp;
+        return TankDirection.Up;
       case KeyboardState.Down:
-        return TankAction.MoveDown;
+        return TankDirection.Down;
 
       // Diagonal directions:
       case KeyboardState.Left | KeyboardState.Up:
-        return TankAction.MoveUpLeft;
+        return TankDirection.UpLeft;
       case KeyboardState.Up | KeyboardState.Right:
-        return TankAction.MoveUpRight;
+        return TankDirection.UpRight;
       case KeyboardState.Down | KeyboardState.Left:
-        return TankAction.MoveDownLeft;
+        return TankDirection.DownLeft;
       case KeyboardState.Down | KeyboardState.Right:
-        return TankAction.MoveDownRight;
+        return TankDirection.DownRight;
     }
   }
 
