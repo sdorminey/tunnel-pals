@@ -44,7 +44,7 @@ class Grid:
         self.grid[row * self.rows + col] = CellType(kind.value)
         self.updates.append((col, row, kind))
   
-  def can_move_through_box(self, x: int, y: int, w: int, h: int):
+  def can_move_through_box(self, x: int, y: int, w = 1, h = 1) -> MoveType:
     if x < 0 or y < 0 or x+w > self.cols or y+h > self.rows:
       return MoveType.Unbreakable
     return MoveType(max([self.grid[row * self.rows + col].move_type.value for row in range(y, y + h) for col in range(x, x + h)]))
@@ -72,11 +72,60 @@ class TankDirection(Enum):
       TankDirection.DownRight: (1, 1)
     }.get(self)
 
+  @property
+  def gunOffset(self):
+    return {
+      TankDirection.Left: (0, 1),
+      TankDirection.Right: (2, 1),
+      TankDirection.Up: (1, 0),
+      TankDirection.Down: (1, 2),
+      TankDirection.UpLeft: (0, 0),
+      TankDirection.DownLeft: (0, 2),
+      TankDirection.UpRight: (2, 0),
+      TankDirection.DownRight: (2, 2)
+    }.get(self)
+
 class MessageType(Enum):
   GameInit = 1
   TankInput = 2
   TankMove = 3
   GridUpdates = 4
+  TankShoot = 5
+
+class Shot:
+  def __init__(self, x: int, y: int, direction : TankDirection):
+    self.x = x
+    self.y = y
+    self.direction = direction
+  
+  def tick(self, grid: Grid):
+    grid.set_cells(self.x, self.y, CellType.Void)
+    dX, dY = self.direction.delta
+    self.x += dX; self.y += dY
+    moveType = grid.can_move_through_box(self.x, self.y)
+    if moveType == MoveType.Free:
+      grid.set_cells(self.x, self.y, CellType.Shot)
+      return True
+    if moveType == MoveType.Slow:
+      grid.set_cells(self.x, self.y, CellType.Void)
+      return False
+    return False
+  
+class Shots:
+  def __init__(self, grid : Grid):
+    self.shots = set()
+    self.grid = grid
+
+  def add_shot(self, x: int, y: int, direction: TankDirection):
+    self.shots.add(Shot(x, y, direction))
+  
+  def tick(self):
+    dead = set()
+    for shot in self.shots:
+      if not shot.tick(self.grid):
+        dead.add(shot)
+    for shot in dead:
+      self.shots.remove(shot)
 
 class Tank:
   def __init__(self):
@@ -85,6 +134,7 @@ class Tank:
     self.direction = TankDirection.Right
     self.moving = False
     self.delay = 0
+    self.shooting = False
   
   def tick(self, grid : Grid):
     if not self.moving:
@@ -113,11 +163,18 @@ class Game:
   def __init__(self):
     self.grid = Grid(128, 128)
     self.tank = Tank()
+    self.shots = Shots(self.grid)
     self.sockets = []
   
   async def run(self):
     while True:
       moved = self.tank.tick(self.grid)
+      if self.tank.shooting:
+        self.tank.shooting = False
+        dX, dY = self.tank.direction.gunOffset
+        self.shots.add_shot(self.tank.x + dX, self.tank.y + dY, self.tank.direction)
+
+      self.shots.tick()
       updates = self.grid.get_updates()
       for socket in self.sockets:
         if updates:
@@ -160,6 +217,8 @@ class Game:
           if message["direction"]:
             self.tank.direction = TankDirection(message["direction"])
           self.tank.moving = message["moving"]
+        if message["type"] == MessageType.TankShoot.value:
+          self.tank.shooting = True
     finally:
       self.sockets.remove(websocket)
 

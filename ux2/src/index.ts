@@ -51,6 +51,13 @@ class Game {
         type: MessageType.TankInput
       }))
     }
+
+    const shooting = this.controller.isShooting();
+    if (shooting) {
+      this.ws.send(JSON.stringify(<BaseMessage>{
+        type: MessageType.TankShoot
+      }));
+    }
   }
 
   private start(): void {

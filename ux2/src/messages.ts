@@ -15,7 +15,8 @@ export enum MessageType {
   GridData = 1,
   TankInput,
   TankMove,
-  GridUpdates
+  GridUpdates,
+  TankShoot
 }
 
 export class BaseMessage {
