@@ -77,18 +77,21 @@ class Game {
           this.tank.direction = message.direction;
           this.tank.x = message.x;
           this.tank.y = message.y;
+          break;
         }
       case MessageType.GridUpdates:
         {
           const message = <GridUpdatesMessage>(untyped);
           for (let update of message.updates) {
-            this.grid.setCell(update.x, update.y, update.kind)
+            this.grid.setCell(update.x, update.y, update.type);
           }
+          break;
         }
       default:
         console.log("No idea what this message was!");
         break;
     }
+    //this.render()
   }
 }
 

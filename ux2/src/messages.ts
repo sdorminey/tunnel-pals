@@ -40,5 +40,5 @@ export class TankMoveMessage extends BaseMessage {
 }
 
 export class GridUpdatesMessage extends BaseMessage {
-  updates: {x: number; y: number; kind: CellType}[]
+  updates: {x: number; y: number; type: CellType}[]
 }
