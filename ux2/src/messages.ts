@@ -33,8 +33,7 @@ export class GridDataMessage extends BaseMessage {
 }
 
 export class TankInputMessage extends BaseMessage {
-  direction: TankDirection;
-  moving: boolean;
+  direction: TankDirection | null;
 }
 
 export class TankMoveMessage extends BaseMessage {

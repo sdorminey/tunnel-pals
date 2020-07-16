@@ -132,13 +132,16 @@ class Tank:
     self.x = 0
     self.y = 0
     self.direction = TankDirection.Right
+    self.lastDirection = self.direction
     self.moving = False
     self.delay = 0
     self.shooting = False
   
   def tick(self, grid : Grid):
     if not self.moving:
-      return
+      newDirection = self.direction == self.lastDirection
+      self.lastDirection = self.direction
+      return newDirection
 
     dX, dY = self.direction.delta
     moveKind = grid.can_move_through_box(self.x + dX, self.y + dY, 3, 3)
@@ -188,12 +191,12 @@ class Game:
           }))
 
         if moved:
-            await socket.send(json.dumps({
-              "type": MessageType.TankMove.value,
-              "x": self.tank.x,
-              "y": self.tank.y,
-              "direction": self.tank.direction.value
-            }))
+          await socket.send(json.dumps({
+            "type": MessageType.TankMove.value,
+            "x": self.tank.x,
+            "y": self.tank.y,
+            "direction": self.tank.direction.value
+          }))
       updates.clear()
       await asyncio.sleep(0.025)
 
@@ -216,7 +219,9 @@ class Game:
         if message["type"] == MessageType.TankInput.value:
           if message["direction"]:
             self.tank.direction = TankDirection(message["direction"])
-          self.tank.moving = message["moving"]
+            self.tank.moving = True
+          else:
+            self.tank.moving = False
         if message["type"] == MessageType.TankShoot.value:
           self.tank.shooting = True
     finally:

@@ -38,19 +38,10 @@ class Game {
   private handleInput(event: KeyboardEvent): void {
     this.controller.receiveInput(event);
     const direction = this.controller.getTankDirection();
-    if (direction) {
-      this.ws.send(JSON.stringify(<TankInputMessage>{
-        direction: direction,
-        moving: true,
-        type: MessageType.TankInput
-      }));
-    } else {
-      this.ws.send(JSON.stringify(<TankInputMessage>{
-        direction: null,
-        moving: false,
-        type: MessageType.TankInput
-      }))
-    }
+    this.ws.send(JSON.stringify(<TankInputMessage>{
+      direction: direction,
+      type: MessageType.TankInput
+    }));
 
     const shooting = this.controller.isShooting();
     if (shooting) {
