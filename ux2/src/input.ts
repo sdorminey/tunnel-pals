@@ -49,23 +49,23 @@ export class InputController {
       return;
     }
 
-    if (event.keyCode == 188) { // W
+    if (event.code == 'KeyW') { // W
       this.keyboardState ^= KeyboardState.Up;
     }
 
-    if (event.keyCode == 65) { // A
+    if (event.code == 'KeyA') { // A
       this.keyboardState ^= KeyboardState.Left;
     }
 
-    if (event.keyCode == 79) { // S
+    if (event.code == 'KeyS') { // S
       this.keyboardState ^= KeyboardState.Down;
     }
 
-    if (event.keyCode == 69) { // D
+    if (event.code == 'KeyD') { // D
       this.keyboardState ^= KeyboardState.Right;
     }
 
-    if (event.keyCode == 32) {
+    if (event.code == 'Space') {
       this.keyboardState ^= KeyboardState.Shooting;
     }
   }
