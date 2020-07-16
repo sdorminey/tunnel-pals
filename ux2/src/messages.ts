@@ -14,7 +14,8 @@ export enum TankDirection {
 export enum MessageType {
   GridData = 1,
   TankInput,
-  TankMove
+  TankMove,
+  GridUpdates
 }
 
 export class BaseMessage {
@@ -36,4 +37,8 @@ export class TankMoveMessage extends BaseMessage {
   direction: TankDirection;
   x: number;
   y: number;
+}
+
+export class GridUpdatesMessage extends BaseMessage {
+  updates: {x: number; y: number; kind: CellType}[]
 }

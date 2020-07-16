@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import { InputController } from './input';
 import GameGrid from './game-grid';
-import { BaseMessage, MessageType, GridDataMessage, TankMoveMessage, TankInputMessage } from './messages';
+import { BaseMessage, MessageType, GridDataMessage, TankMoveMessage, TankInputMessage, GridUpdatesMessage } from './messages';
 import Tank from './tank';
 
 class Game {
@@ -77,6 +77,13 @@ class Game {
           this.tank.direction = message.direction;
           this.tank.x = message.x;
           this.tank.y = message.y;
+        }
+      case MessageType.GridUpdates:
+        {
+          const message = <GridUpdatesMessage>(untyped);
+          for (let update of message.updates) {
+            this.grid.setCell(update.x, update.y, update.kind)
+          }
         }
       default:
         console.log("No idea what this message was!");

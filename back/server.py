@@ -4,11 +4,50 @@ import json
 import random
 from enum import Enum
 
+class MoveType(Enum):
+  Free = 0
+  Slow = 1
+  Unbreakable = 2
+
+class CellType(Enum):
+  Void = 0
+  LightSand = 1
+  DarkSand = 2
+  GreenTankBody = 3
+  Shot = 4
+
+  @property
+  def move_type(self):
+    t = {
+      CellType.Void: MoveType.Free,
+      CellType.LightSand: MoveType.Slow,
+      CellType.DarkSand: MoveType.Slow
+    }.get(self) 
+    return t if t else MoveType.Unbreakable
+
 class Grid:
   def __init__(self, rows, cols):
     self.rows = rows
     self.cols = cols
-    self.grid = [random.randint(0, 2) for x in range(rows * cols)]
+    self.grid = [CellType(random.randint(0, 2)) for x in range(rows * cols)]
+    self.updates = []
+
+  def get_updates(self):
+    return self.updates
+
+  def clear_updates(self):
+    self.updates.clear()
+
+  def set_cells(self, x: int, y: int, kind: CellType, w = 1, h = 1):
+    for col in range(x, x + w):
+      for row in range(y, y + h):
+        self.grid[row * self.rows + col] = CellType(kind.value)
+        self.updates.append((col, row, kind))
+  
+  def can_move_through_box(self, x: int, y: int, w: int, h: int):
+    if x < 0 or y < 0 or x+w > self.cols or y+h > self.rows:
+      return MoveType.Unbreakable
+    return MoveType(max([self.grid[row * self.rows + col].move_type.value for row in range(y, y + h) for col in range(x, x + h)]))
 
 class TankDirection(Enum):
   Left = 1
@@ -20,36 +59,55 @@ class TankDirection(Enum):
   DownLeft = 7
   DownRight = 8
 
-def delta(dir: TankDirection):
-  deltas = {
-    TankDirection.Left.value: (-1, 0),
-    TankDirection.Right.value: (1, 0),
-    TankDirection.Up.value: (0, -1),
-    TankDirection.Down.value: (0, 1),
-    TankDirection.UpLeft.value: (-1, -1),
-    TankDirection.DownLeft.value: (-1, 1),
-    TankDirection.UpRight.value: (1, -1),
-    TankDirection.DownRight.value: (1, 1)
-  }
-  return deltas[dir]
+  @property
+  def delta(self):
+    return {
+      TankDirection.Left: (-1, 0),
+      TankDirection.Right: (1, 0),
+      TankDirection.Up: (0, -1),
+      TankDirection.Down: (0, 1),
+      TankDirection.UpLeft: (-1, -1),
+      TankDirection.DownLeft: (-1, 1),
+      TankDirection.UpRight: (1, -1),
+      TankDirection.DownRight: (1, 1)
+    }.get(self)
 
 class MessageType(Enum):
   GameInit = 1
   TankInput = 2
   TankMove = 3
+  GridUpdates = 4
 
 class Tank:
   def __init__(self):
     self.x = 0
     self.y = 0
-    self.direction = TankDirection.Right.value
+    self.direction = TankDirection.Right
     self.moving = False
+    self.delay = 0
   
-  def tick(self):
+  def tick(self, grid : Grid):
     if not self.moving:
       return
-    dX, dY = delta(self.direction)
-    self.x += dX; self.y += dY
+
+    dX, dY = self.direction.delta
+    moveKind = grid.can_move_through_box(self.x + dX, self.y + dY, 3, 3)
+
+    if moveKind == MoveType.Free:
+      self.x += dX; self.y += dY
+      grid.set_cells(self.x, self.y, CellType.Void, 3, 3)
+      return True
+
+    if moveKind == MoveType.Slow:
+      if not self.delay:
+        self.delay = 3
+        self.x += dX; self.y += dY
+        grid.set_cells(self.x, self.y, CellType.Void, 3, 3)
+        return True
+      else:
+        self.delay -= 1
+    
+    return False
 
 class Game:
   def __init__(self):
@@ -59,14 +117,27 @@ class Game:
   
   async def run(self):
     while True:
-      self.tank.tick()
+      moved = self.tank.tick(self.grid)
+      updates = self.grid.get_updates()
       for socket in self.sockets:
-        await socket.send(json.dumps({
-          "type": MessageType.TankMove.value,
-          "x": self.tank.x,
-          "y": self.tank.y,
-          "direction": self.tank.direction
-        }))
+        if updates:
+          await socket.send(json.dumps({
+            "type": MessageType.GridUpdates.value,
+            "updates": [{
+              "x": x,
+              "y": y,
+              "type": kind.value
+            } for (x, y, kind) in updates]
+          }))
+
+        if moved:
+            await socket.send(json.dumps({
+              "type": MessageType.TankMove.value,
+              "x": self.tank.x,
+              "y": self.tank.y,
+              "direction": self.tank.direction.value
+            }))
+      updates.clear()
       await asyncio.sleep(0.025)
 
   async def accept(self, websocket : websockets.WebSocketServerProtocol, path):
@@ -76,10 +147,10 @@ class Game:
         "type": MessageType.GameInit.value,
         "rows": self.grid.rows,
         "cols": self.grid.cols,
-        "grid": self.grid.grid,
+        "grid": [g.value for g in self.grid.grid],
         "tankX": self.tank.x,
         "tankY": self.tank.y,
-        "tankDirection": self.tank.direction
+        "tankDirection": self.tank.direction.value
       }
 
       await websocket.send(json.dumps(gridMessage))
@@ -87,7 +158,7 @@ class Game:
         message = json.loads(await websocket.recv())
         if message["type"] == MessageType.TankInput.value:
           if message["direction"]:
-            self.tank.direction = message["direction"]
+            self.tank.direction = TankDirection(message["direction"])
           self.tank.moving = message["moving"]
     finally:
       self.sockets.remove(websocket)
