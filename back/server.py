@@ -132,16 +132,17 @@ class Tank:
     self.x = 0
     self.y = 0
     self.direction = TankDirection.Right
-    self.lastDirection = self.direction
+    self.nextDirection = None
     self.moving = False
     self.delay = 0
     self.shooting = False
-  
+
   def tick(self, grid : Grid):
+    directionChanged = self.nextDirection and self.direction != self.nextDirection
+    if self.nextDirection:
+      self.direction = self.nextDirection
     if not self.moving:
-      newDirection = self.direction == self.lastDirection
-      self.lastDirection = self.direction
-      return newDirection
+      return directionChanged
 
     dX, dY = self.direction.delta
     moveKind = grid.can_move_through_box(self.x + dX, self.y + dY, 3, 3)
@@ -217,11 +218,8 @@ class Game:
       while True:
         message = json.loads(await websocket.recv())
         if message["type"] == MessageType.TankInput.value:
-          if message["direction"]:
-            self.tank.direction = TankDirection(message["direction"])
-            self.tank.moving = True
-          else:
-            self.tank.moving = False
+          self.tank.nextDirection = TankDirection(message["direction"]) if message["direction"] else None
+          self.tank.moving = self.tank.nextDirection
         if message["type"] == MessageType.TankShoot.value:
           self.tank.shooting = True
     finally:
