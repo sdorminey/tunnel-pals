@@ -26,6 +26,9 @@ export class GridDataMessage extends BaseMessage {
   grid: CellType[];
   rows: number;
   cols: number;
+  tankDirection: TankDirection;
+  tankX: number;
+  tankY: number;
 }
 
 export class TankInputMessage extends BaseMessage {

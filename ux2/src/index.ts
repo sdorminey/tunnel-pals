@@ -68,6 +68,9 @@ class Game {
           const message = <GridDataMessage>(untyped);
           this.grid = new GameGrid(message.rows, message.cols, message.grid);
           this.tank = new Tank(this.grid);
+          this.tank.x = message.tankX;
+          this.tank.y = message.tankY;
+          this.tank.direction = message.tankDirection;
           this.start();
           break;
         }
