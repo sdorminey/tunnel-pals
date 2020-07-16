@@ -54,8 +54,8 @@ class Game {
   }
 
   private start(): void {
-    this.canvas.addEventListener("keydown", (event) => this.handleInput(event), true);
-    this.canvas.addEventListener("keyup", (event) => this.handleInput(event), true);
+    window.addEventListener("keydown", (event) => this.handleInput(event), true);
+    window.addEventListener("keyup", (event) => this.handleInput(event), true);
     game.render();
     window.setInterval(() => game.updateLoop(), 25);
   }
