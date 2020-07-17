@@ -12,6 +12,7 @@ class CellType(Enum):
   DarkSand = 2
   GreenTankBody = 3
   Shot = 4
+  BlueTankBody = 5
 
   @property
   def move_type(self):
@@ -58,57 +59,59 @@ class TankDirection(Enum):
       TankDirection.DownRight: (2, 2)
     }.get(self)
 
-  @property
-  def sprite(self):
+class Sprites:
+  @staticmethod
+  def tank(direction: TankDirection, color: CellType):
     return {
       TankDirection.Left: [
-        CellType.Void, CellType.GreenTankBody, CellType.GreenTankBody,
-        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
-        CellType.Void, CellType.GreenTankBody, CellType.GreenTankBody
+        CellType.Void, color, color,
+        color, color, color,
+        CellType.Void, color, color
       ],
 
       TankDirection.Right: [
-        CellType.GreenTankBody, CellType.GreenTankBody, CellType.Void,
-        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
-        CellType.GreenTankBody, CellType.GreenTankBody, CellType.Void
+        color, color, CellType.Void,
+        color, color, color,
+        color, color, CellType.Void
       ],
 
       TankDirection.Up: [
-        CellType.Void, CellType.GreenTankBody, CellType.Void,
-        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
-        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody
+        CellType.Void, color, CellType.Void,
+        color, color, color,
+        color, color, color
       ],
 
       TankDirection.Down: [
-        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
-        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
-        CellType.Void, CellType.GreenTankBody, CellType.Void
+        color, color, color,
+        color, color, color,
+        CellType.Void, color, CellType.Void
       ],
 
       TankDirection.UpLeft: [
-        CellType.GreenTankBody, CellType.Void, CellType.GreenTankBody,
-        CellType.Void, CellType.GreenTankBody, CellType.GreenTankBody,
-        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody
+        color, CellType.Void, color,
+        CellType.Void, color, color,
+        color, color, color
       ],
 
       TankDirection.DownLeft: [
-        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
-        CellType.Void, CellType.GreenTankBody, CellType.GreenTankBody,
-        CellType.GreenTankBody, CellType.Void, CellType.GreenTankBody
+        color, color, color,
+        CellType.Void, color, color,
+        color, CellType.Void, color
       ],
 
       TankDirection.UpRight: [
-        CellType.GreenTankBody, CellType.Void, CellType.GreenTankBody,
-        CellType.GreenTankBody, CellType.GreenTankBody, CellType.Void,
-        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody
+        color, CellType.Void, color,
+        color, color, CellType.Void,
+        color, color, color
       ],
 
       TankDirection.DownRight: [
-        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
-        CellType.GreenTankBody, CellType.GreenTankBody, CellType.Void,
-        CellType.GreenTankBody, CellType.Void, CellType.GreenTankBody
+        color, color, color,
+        color, color, CellType.Void,
+        color, CellType.Void, color
       ]
-    }.get(self)
+    }.get(direction)
+
 
 class MessageType(Enum):
   GameInit = 1

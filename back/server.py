@@ -10,7 +10,7 @@ from tank import Tank
 class Game:
   def __init__(self):
     self.grid = Grid(128, 128)
-    self.tank = Tank()
+    self.tank = Tank(CellType.GreenTankBody)
     self.shots = Shots(self.grid)
     self.sockets = []
   
@@ -62,7 +62,7 @@ class Game:
       while True:
         message = json.loads(await websocket.recv())
         if message["type"] == MessageType.TankInput.value:
-          self.tank.nextDirection = TankDirection(message["direction"]) if message["direction"] else None
+          self.tank.nextDirection = TankDirection(message["direction"]) if "direction" in message and message["direction"] else None
           self.tank.moving = self.tank.nextDirection
         if message["type"] == MessageType.TankShoot.value:
           self.tank.shooting = True

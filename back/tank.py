@@ -2,7 +2,7 @@ from contract import *
 from grid import Grid
 
 class Tank:
-  def __init__(self):
+  def __init__(self, color: CellType):
     self.x = 0
     self.y = 0
     self.direction = TankDirection.Right
@@ -10,6 +10,7 @@ class Tank:
     self.moving = False
     self.delay = 0
     self.shooting = False
+    self.color = color
 
   def tick(self, grid : Grid):
     directionChanged = self.nextDirection and self.direction != self.nextDirection
@@ -37,5 +38,5 @@ class Tank:
       
       return directionChanged
     finally:
-      grid.set_sprite(self.x, self.y, self.direction.sprite, 3)
+      grid.set_sprite(self.x, self.y, Sprites.tank(self.direction, self.color), 3)
 
