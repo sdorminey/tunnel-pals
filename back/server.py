@@ -7,12 +7,36 @@ from grid import Grid
 from shots import Shots
 from tank import Tank
 
+class Session:
+  def __init__(self, websocket: websockets.WebSocketServerProtocol, tank: Tank):
+    self.socket = websocket
+    self.tank = tank
+
+  async def update(self, moved: bool, updates):
+    if updates:
+      await self.socket.send(json.dumps({
+        "type": MessageType.GridUpdates.value,
+        "updates": [{
+          "x": x,
+          "y": y,
+          "type": kind.value
+        } for (x, y, kind) in updates]
+      }))
+
+    if moved:
+      await self.socket.send(json.dumps({
+        "type": MessageType.TankMove.value,
+        "x": self.tank.x,
+        "y": self.tank.y,
+        "direction": self.tank.direction.value
+      }))
+
 class Game:
   def __init__(self):
     self.grid = Grid(128, 128)
     self.tank = Tank(CellType.GreenTankBody)
     self.shots = Shots(self.grid)
-    self.sockets = []
+    self.sessions = []
   
   async def run(self):
     while True:
@@ -24,29 +48,14 @@ class Game:
 
       self.shots.tick()
       updates = self.grid.get_updates()
-      for socket in self.sockets:
-        if updates:
-          await socket.send(json.dumps({
-            "type": MessageType.GridUpdates.value,
-            "updates": [{
-              "x": x,
-              "y": y,
-              "type": kind.value
-            } for (x, y, kind) in updates]
-          }))
-
-        if moved:
-          await socket.send(json.dumps({
-            "type": MessageType.TankMove.value,
-            "x": self.tank.x,
-            "y": self.tank.y,
-            "direction": self.tank.direction.value
-          }))
+      for session in self.sessions:
+        await session.update(moved, updates)
       updates.clear()
       await asyncio.sleep(0.025)
 
   async def accept(self, websocket : websockets.WebSocketServerProtocol, path):
-    self.sockets.append(websocket)
+    s = Session(websocket, self.tank)
+    self.sessions.append(s)
     try:
       gridMessage = {
         "type": MessageType.GameInit.value,
@@ -67,7 +76,7 @@ class Game:
         if message["type"] == MessageType.TankShoot.value:
           self.tank.shooting = True
     finally:
-      self.sockets.remove(websocket)
+      self.sessions.remove(s)
 
 g = Game()
 start_server = websockets.serve(g.accept, "localhost", 8765)
