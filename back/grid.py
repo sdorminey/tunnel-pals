@@ -37,3 +37,9 @@ class Grid:
       return MoveType.Unbreakable
     return MoveType(max([self.grid[row * self.rows + col].move_type.value for row in range(y, y + h) for col in range(x, x + h)]))
 
+class GridEditor:
+  def __init__(self, grid: Grid):
+    self.grid = grid
+
+  def gen_rock(self, x: int, y: int):
+    if random.
