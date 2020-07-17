@@ -82,7 +82,7 @@ class Game:
 
       await websocket.send(json.dumps(gridMessage))
 
-      s.update(True, None)
+      await s.update(True, None)
 
       while True:
         message = json.loads(await websocket.recv())

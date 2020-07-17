@@ -13,6 +13,7 @@ class CellType(Enum):
   GreenTankBody = 3
   Shot = 4
   BlueTankBody = 5
+  Rock = 6
 
   @property
   def move_type(self):
