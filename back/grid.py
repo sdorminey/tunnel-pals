@@ -20,6 +20,7 @@ class Grid:
     self.updates = []
     self.rows = rows
     self.cols = cols
+    self.seed = random.randint(0, 25000)
     self.grid = [CellType(random.randint(0, 2)) for x in range(rows * cols)]
     self._rock_on()
     x, y = self._gen_base_coords()
@@ -41,7 +42,7 @@ class Grid:
     for k in range(self.rows * self.cols):
       x = k % self.cols
       y = k // self.cols
-      z = noise.pnoise2(x/ROCK_SCALE, y/ROCK_SCALE, octaves = ROCK_OCTAVES, persistence=ROCK_PERSISTENCE, lacunarity=ROCK_LACUNULARITY, repeatx=self.cols, repeaty=self.rows, base=0)
+      z = noise.pnoise3(x/ROCK_SCALE, y/ROCK_SCALE, self.seed, octaves = ROCK_OCTAVES, persistence=ROCK_PERSISTENCE, lacunarity=ROCK_LACUNULARITY, repeatx=self.cols, repeaty=self.rows, repeatz=25000, base=0)
       if z > self._rock_cutoff(x, y):
         self.grid[k] = CellType.Rock
 
