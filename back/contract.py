@@ -14,11 +14,15 @@ class CellType(Enum):
   Shot = 4
   BlueTankBody = 5
   Rock = 6
+  ChargePad = 7
+  GreenWall = 8
+  BlueWall = 9
 
   @property
   def move_type(self):
     t = {
       CellType.Void: MoveType.Free,
+      CellType.ChargePad: MoveType.Free,
       CellType.LightSand: MoveType.Slow,
       CellType.DarkSand: MoveType.Slow
     }.get(self) 

@@ -6,7 +6,10 @@ export enum CellType {
   GreenTankBody = 3,
   Shot = 4,
   BlueTankBody = 5,
-  Rock = 6
+  Rock = 6,
+  ChargePad = 7,
+  GreenWall = 8,
+  BlueWall = 9
 }
 
 export enum CellMoveType {
@@ -38,16 +41,19 @@ export class GameInfo {
 
   public static colorForCell(type: CellType): string {
     switch (type) {
+      case CellType.ChargePad:
       case CellType.Void:
         return "#000000";
       case CellType.LightSand:
         return "#fc9003";
       case CellType.DarkSand:
         return "#7d4700";
+      case CellType.GreenWall:
       case CellType.GreenTankBody:
         return "#00ff00";
       case CellType.Shot:
         return "#ff0000";
+      case CellType.BlueWall:
       case CellType.BlueTankBody:
         return "#0000ff";
       case CellType.Rock:

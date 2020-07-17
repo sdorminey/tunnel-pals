@@ -11,13 +11,21 @@ ROCK_LACUNULARITY = 2.0
 ROCK_CUTOFF = 0.25
 ROCK_WALL_SIZE = 8
 
+BASE_WIDTH = 16
+BASE_HEIGHT = 32
+
 class Grid:
   def __init__(self, rows, cols):
+    self.updates = []
     self.rows = rows
     self.cols = cols
     self.grid = [CellType(random.randint(0, 2)) for x in range(rows * cols)]
     self._rock_on()
-    self.updates = []
+    x, y = self._gen_base_coords()
+    self._create_base(x, y, CellType.BlueWall)
+    x, y = self._gen_base_coords()
+    self._create_base(x, y, CellType.GreenWall)
+    self.clear_updates()
 
   def _wall_dist(self, x: int, y: int) -> int:
     return min(min(x, abs(self.cols - x)), min(y, abs(self.rows - y)))
@@ -35,6 +43,19 @@ class Grid:
       z = noise.pnoise2(x/ROCK_SCALE, y/ROCK_SCALE, octaves = ROCK_OCTAVES, persistence=ROCK_PERSISTENCE, lacunarity=ROCK_LACUNULARITY, repeatx=self.cols, repeaty=self.rows, base=0)
       if z > self._rock_cutoff(x, y):
         self.grid[k] = CellType.Rock
+
+  def _gen_base_coords(self) -> (int, int):
+    x = random.randint(ROCK_WALL_SIZE, self.cols - ROCK_WALL_SIZE - BASE_WIDTH)
+    y = random.randint(ROCK_WALL_SIZE, self.rows - ROCK_WALL_SIZE - BASE_HEIGHT)
+    return (x, y)
+
+  def _create_base(self, x: int, y: int, color: CellType):
+    self.set_cells(x, y, CellType.ChargePad, BASE_WIDTH, BASE_HEIGHT)
+    self.set_cells(x, y, color, BASE_WIDTH, 1)
+    self.set_cells(x, y, color, 1, BASE_HEIGHT)
+    self.set_cells(x, y + BASE_HEIGHT, color, BASE_WIDTH, 1)
+    self.set_cells(x + BASE_WIDTH, y, color, 1, BASE_HEIGHT)
+    self.set_cells(x + (BASE_WIDTH // 2 - 2), y, CellType.ChargePad, 5, 1)
 
   def get_updates(self):
     return self.updates
