@@ -161,7 +161,7 @@ class Tank:
       else:
         self.delay -= 1
     
-    return False
+    return directionChanged
 
 class Game:
   def __init__(self):
