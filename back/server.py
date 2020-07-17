@@ -43,10 +43,11 @@ class Game:
     while True:
       moved = False
       for tank in [self.greenTank, self.blueTank]:
-        moved = moved or tank.tick(self.grid)
+        tank.tick(self.grid)
+        moved = moved or tank.has_update()
         if tank.shooting:
           tank.shooting = False
-          dX, dY = tank.direction.gunOffset
+          dX, dY = tank.state.direction.gunOffset
           self.shots.add_shot(tank.x + dX, tank.y + dY, tank.direction)
 
       self.shots.tick()
