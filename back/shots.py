@@ -14,25 +14,39 @@ class Shot:
     moveType = grid.can_move_through_box(self.x, self.y)
     if moveType == MoveType.Free:
       grid.set_cells(self.x, self.y, CellType.Shot)
-      return True
+      return (True, None)
     if moveType == MoveType.Slow:
       grid.set_cells(self.x, self.y, CellType.Void)
-      return False
-    return False
+      return (False, None)
+    return (False, grid.get_cell(self.x, self.y))
   
 class Shots:
   def __init__(self, grid : Grid):
     self.shots = set()
     self.grid = grid
+    self.blueHits = 0
+    self.greenHits = 0
 
   def add_shot(self, x: int, y: int, direction: TankDirection):
     self.shots.add(Shot(x, y, direction))
+
+  def clear_hits(self):
+    self.blueHits = 0
+    self.greenHits = 0
+  
+  def get_hits(self):
+    return (self.greenHits, self.blueHits)
   
   def tick(self):
     dead = set()
     for shot in self.shots:
-      if not shot.tick(self.grid):
+      active, target = shot.tick(self.grid)
+      if not active:
         dead.add(shot)
+      if target == CellType.BlueTankBody:
+        self.blueHits += 1
+      if target == CellType.GreenTankBody:
+        self.greenHits += 1
     for shot in dead:
       self.shots.remove(shot)
 

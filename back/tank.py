@@ -7,13 +7,15 @@ class TankState:
       self.x = other.x
       self.y = other.y
       self.direction = other.direction
+      self.hp = other.hp
     else:
       self.x = 0
       self.y = 0
       self.direction = TankDirection.Right
+      self.hp = 100
   
   def __eq__(self, other) -> bool:
-    return other and self.x == other.x and self.y == other.y and self.direction == other.direction
+    return other and self.x == other.x and self.y == other.y and self.direction == other.direction and self.hp == other.hp
 
 class Tank:
   def __init__(self, color: CellType):
@@ -24,9 +26,10 @@ class Tank:
     self.delay = 0
     self.shooting = False
     self.color = color
+    self.hits = 0
   
   def has_update(self) -> bool:
-    return self.state == self.prevState
+    return self.state != self.prevState
 
   @property
   def x(self) -> int:
@@ -40,11 +43,19 @@ class Tank:
   def direction(self) -> TankDirection:
     return self.state.direction
 
+  @property
+  def hp(self) -> int:
+    return self.state.hp
+
   def tick(self, grid : Grid):
     self.prevState = self.state
     self.state = TankState(self.prevState)
     if self.nextDirection:
       self.state.direction = self.nextDirection
+    
+    if self.hits:
+      self.state.hp -= 10 * self.hits
+      self.hits = 0
 
     if not self.moving:
       return

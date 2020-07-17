@@ -30,6 +30,7 @@ class Game {
     let cameraY = Math.min(Math.max(0, spriteY - this.canvas.height / 2), this.grid.maxY - this.canvas.height);
     this.ctx.translate(-cameraX, -cameraY);
     this.grid.render(this.ctx);
+    document.getElementById("#hp").innerText = this.tank.hp.toString();
     //this.tank.render(this.ctx);
   }
 
@@ -88,6 +89,7 @@ class Game {
           this.tank.direction = message.direction;
           this.tank.x = message.x;
           this.tank.y = message.y;
+          this.tank.hp = message.hp;
           break;
         }
       case MessageType.GridUpdates:

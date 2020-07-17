@@ -14,6 +14,11 @@ class Grid:
   def clear_updates(self):
     self.updates.clear()
 
+  def get_cell(self, x: int, y: int) -> CellType:
+    if x < 0 or y < 0 or x >= self.cols or y >= self.rows:
+      return None
+    return self.grid[y * self.rows + x]
+
   def set_cells(self, x: int, y: int, kind: CellType, w = 1, h = 1):
     for col in range(x, x + w):
       for row in range(y, y + h):

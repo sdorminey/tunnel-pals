@@ -28,7 +28,8 @@ class Session:
         "type": MessageType.TankMove.value,
         "x": self.tank.x,
         "y": self.tank.y,
-        "direction": self.tank.direction.value
+        "direction": self.tank.direction.value,
+        "hp": self.tank.hp
       }))
 
 class Game:
@@ -42,6 +43,12 @@ class Game:
   async def run(self):
     while True:
       moved = False
+      self.shots.tick()
+      greenHits, blueHits = self.shots.get_hits()
+      self.greenTank.hits = greenHits
+      self.blueTank.hits = blueHits
+      self.shots.clear_hits()
+
       for tank in [self.greenTank, self.blueTank]:
         tank.tick(self.grid)
         moved = moved or tank.has_update()
@@ -50,7 +57,6 @@ class Game:
           dX, dY = tank.state.direction.gunOffset
           self.shots.add_shot(tank.x + dX, tank.y + dY, tank.direction)
 
-      self.shots.tick()
       updates = self.grid.get_updates()
       for session in self.sessions:
         await session.update(moved, updates)
@@ -75,6 +81,8 @@ class Game:
       }
 
       await websocket.send(json.dumps(gridMessage))
+
+      s.update(True, None)
 
       while True:
         message = json.loads(await websocket.recv())
