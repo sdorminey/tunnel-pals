@@ -28,7 +28,7 @@ class Game {
     let cameraY = Math.min(Math.max(0, spriteY - this.canvas.height / 2), this.grid.maxY - this.canvas.height);
     this.ctx.translate(-cameraX, -cameraY);
     this.grid.render(this.ctx);
-    this.tank.render(this.ctx);
+    //this.tank.render(this.ctx);
   }
 
   public updateLoop(): void {

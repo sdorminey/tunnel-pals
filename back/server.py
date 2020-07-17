@@ -10,6 +10,7 @@ class MoveType(Enum):
   Unbreakable = 2
 
 class CellType(Enum):
+  Trans = -1
   Void = 0
   LightSand = 1
   DarkSand = 2
@@ -43,7 +44,14 @@ class Grid:
       for row in range(y, y + h):
         self.grid[row * self.rows + col] = CellType(kind.value)
         self.updates.append((col, row, kind))
-  
+
+  def set_sprite(self, x: int, y: int, sprite, cols: int):
+    for k in range(len(sprite)):
+      col = x + k % cols
+      row = y + k // cols
+      self.grid[row * self.rows + col] = sprite[k]
+      self.updates.append((col, row, sprite[k]))
+
   def can_move_through_box(self, x: int, y: int, w = 1, h = 1) -> MoveType:
     if x < 0 or y < 0 or x+w > self.cols or y+h > self.rows:
       return MoveType.Unbreakable
@@ -83,6 +91,58 @@ class TankDirection(Enum):
       TankDirection.DownLeft: (0, 2),
       TankDirection.UpRight: (2, 0),
       TankDirection.DownRight: (2, 2)
+    }.get(self)
+
+  @property
+  def sprite(self):
+    return {
+      TankDirection.Left: [
+        CellType.Void, CellType.GreenTankBody, CellType.GreenTankBody,
+        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
+        CellType.Void, CellType.GreenTankBody, CellType.GreenTankBody
+      ],
+
+      TankDirection.Right: [
+        CellType.GreenTankBody, CellType.GreenTankBody, CellType.Void,
+        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
+        CellType.GreenTankBody, CellType.GreenTankBody, CellType.Void
+      ],
+
+      TankDirection.Up: [
+        CellType.Void, CellType.GreenTankBody, CellType.Void,
+        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
+        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody
+      ],
+
+      TankDirection.Down: [
+        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
+        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
+        CellType.Void, CellType.GreenTankBody, CellType.Void
+      ],
+
+      TankDirection.UpLeft: [
+        CellType.GreenTankBody, CellType.Void, CellType.GreenTankBody,
+        CellType.Void, CellType.GreenTankBody, CellType.GreenTankBody,
+        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody
+      ],
+
+      TankDirection.DownLeft: [
+        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
+        CellType.Void, CellType.GreenTankBody, CellType.GreenTankBody,
+        CellType.GreenTankBody, CellType.Void, CellType.GreenTankBody
+      ],
+
+      TankDirection.UpRight: [
+        CellType.GreenTankBody, CellType.Void, CellType.GreenTankBody,
+        CellType.GreenTankBody, CellType.GreenTankBody, CellType.Void,
+        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody
+      ],
+
+      TankDirection.DownRight: [
+        CellType.GreenTankBody, CellType.GreenTankBody, CellType.GreenTankBody,
+        CellType.GreenTankBody, CellType.GreenTankBody, CellType.Void,
+        CellType.GreenTankBody, CellType.Void, CellType.GreenTankBody
+      ]
     }.get(self)
 
 class MessageType(Enum):
@@ -144,24 +204,26 @@ class Tank:
     if not self.moving:
       return directionChanged
 
+    grid.set_cells(self.x, self.y, CellType.Void, 3, 3)
     dX, dY = self.direction.delta
     moveKind = grid.can_move_through_box(self.x + dX, self.y + dY, 3, 3)
 
-    if moveKind == MoveType.Free:
-      self.x += dX; self.y += dY
-      grid.set_cells(self.x, self.y, CellType.Void, 3, 3)
-      return True
-
-    if moveKind == MoveType.Slow:
-      if not self.delay:
-        self.delay = 3
+    try:
+      if moveKind == MoveType.Free:
         self.x += dX; self.y += dY
-        grid.set_cells(self.x, self.y, CellType.Void, 3, 3)
         return True
-      else:
-        self.delay -= 1
-    
-    return directionChanged
+
+      if moveKind == MoveType.Slow:
+        if not self.delay:
+          self.delay = 3
+          self.x += dX; self.y += dY
+          return True
+        else:
+          self.delay -= 1
+      
+      return directionChanged
+    finally:
+      grid.set_sprite(self.x, self.y, self.direction.sprite, 3)
 
 class Game:
   def __init__(self):
