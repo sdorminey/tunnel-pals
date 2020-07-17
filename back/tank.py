@@ -9,8 +9,8 @@ class TankState:
       self.direction = other.direction
       self.hp = other.hp
     else:
-      self.x = 0
-      self.y = 0
+      self.x = 64
+      self.y = 64
       self.direction = TankDirection.Right
       self.hp = 100
   

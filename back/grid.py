@@ -9,6 +9,7 @@ ROCK_OCTAVES = 6
 ROCK_PERSISTENCE = 0.5
 ROCK_LACUNULARITY = 2.0
 ROCK_CUTOFF = 0.25
+ROCK_WALL_SIZE = 8
 
 class Grid:
   def __init__(self, rows, cols):
@@ -18,12 +19,21 @@ class Grid:
     self._rock_on()
     self.updates = []
 
+  def _wall_dist(self, x: int, y: int) -> int:
+    return min(min(x, abs(self.cols - x)), min(y, abs(self.rows - y)))
+
+  def _rock_cutoff(self, x: int, y: int) -> float:
+    dist = self._wall_dist(x, y)
+    if dist > ROCK_WALL_SIZE:
+      return ROCK_CUTOFF
+    return -0.5 + 0.75 * (dist / ROCK_WALL_SIZE)
+
   def _rock_on(self):
     for k in range(self.rows * self.cols):
-      x = (k % self.cols)/ROCK_SCALE
-      y = (k // self.cols)/ROCK_SCALE
-      z = noise.pnoise2(x, y, octaves = ROCK_OCTAVES, persistence=ROCK_PERSISTENCE, lacunarity=ROCK_LACUNULARITY, repeatx=self.cols, repeaty=self.rows, base=0)
-      if z > ROCK_CUTOFF:
+      x = k % self.cols
+      y = k // self.cols
+      z = noise.pnoise2(x/ROCK_SCALE, y/ROCK_SCALE, octaves = ROCK_OCTAVES, persistence=ROCK_PERSISTENCE, lacunarity=ROCK_LACUNULARITY, repeatx=self.cols, repeaty=self.rows, base=0)
+      if z > self._rock_cutoff(x, y):
         self.grid[k] = CellType.Rock
 
   def get_updates(self):
