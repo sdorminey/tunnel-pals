@@ -13,6 +13,7 @@ ROCK_WALL_SIZE = 8
 
 BASE_WIDTH = 16
 BASE_HEIGHT = 32
+BASE_MARGIN = 8
 
 class Grid:
   def __init__(self, rows, cols):
@@ -45,9 +46,12 @@ class Grid:
         self.grid[k] = CellType.Rock
 
   def _gen_base_coords(self) -> (int, int):
-    x = random.randint(ROCK_WALL_SIZE, self.cols - ROCK_WALL_SIZE - BASE_WIDTH)
-    y = random.randint(ROCK_WALL_SIZE, self.rows - ROCK_WALL_SIZE - BASE_HEIGHT)
-    return (x, y)
+    while True:
+      x = random.randint(ROCK_WALL_SIZE, self.cols - ROCK_WALL_SIZE - BASE_WIDTH)
+      y = random.randint(ROCK_WALL_SIZE, self.rows - ROCK_WALL_SIZE - BASE_HEIGHT)
+      survey = self.survey_cells(x - BASE_MARGIN, y - BASE_MARGIN, BASE_WIDTH + BASE_MARGIN, BASE_HEIGHT + BASE_MARGIN)
+      if not CellType.ChargePad in survey and not CellType.BlueWall in survey and not CellType.GreenWall in survey:
+        return (x, y)
 
   def _create_base(self, x: int, y: int, color: CellType):
     self.set_cells(x, y, CellType.ChargePad, BASE_WIDTH, BASE_HEIGHT)
@@ -85,3 +89,10 @@ class Grid:
     if x < 0 or y < 0 or x+w > self.cols or y+h > self.rows:
       return MoveType.Unbreakable
     return MoveType(max([self.grid[row * self.rows + col].move_type.value for row in range(y, y + h) for col in range(x, x + h)]))
+
+  def survey_cells(self, x: int, y: int, w = 1, h = 1) -> set(CellType):
+    kinds = set()
+    for col in range(x, x + w):
+      for row in range(y, y + h):
+        kinds.add(self.grid[row * self.rows + col])
+    return kinds
