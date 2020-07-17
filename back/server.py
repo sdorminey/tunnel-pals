@@ -29,7 +29,8 @@ class Session:
         "x": self.tank.x,
         "y": self.tank.y,
         "direction": self.tank.direction.value,
-        "hp": self.tank.hp
+        "hp": self.tank.hp,
+        "power": self.tank.power
       }))
 
 class Game:

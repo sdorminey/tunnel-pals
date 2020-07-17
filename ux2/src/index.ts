@@ -31,6 +31,7 @@ class Game {
     this.ctx.translate(-cameraX, -cameraY);
     this.grid.render(this.ctx);
     document.getElementById("#hp").innerText = this.tank.hp.toString();
+    document.getElementById("#power").innerText = this.tank.power.toString();
     //this.tank.render(this.ctx);
   }
 
@@ -90,6 +91,7 @@ class Game {
           this.tank.x = message.x;
           this.tank.y = message.y;
           this.tank.hp = message.hp;
+          this.tank.power = message.power;
           break;
         }
       case MessageType.GridUpdates:

@@ -47,6 +47,7 @@ export class TankMoveMessage extends BaseMessage {
   x: number;
   y: number;
   hp: number;
+  power: number;
 }
 
 export class GridUpdatesMessage extends BaseMessage {
