@@ -18,8 +18,11 @@ class TankState:
     return other and self.x == other.x and self.y == other.y and self.direction == other.direction and self.hp == other.hp
 
 class Tank:
-  def __init__(self, color: CellType):
+  def __init__(self, color: CellType, xy: (int, int)):
     self.state = TankState()
+    x, y = xy
+    self.state.x = x
+    self.state.y = y
     self.prevState = None
     self.nextDirection = None
     self.moving = False

@@ -35,8 +35,8 @@ class Session:
 class Game:
   def __init__(self):
     self.grid = Grid(128, 128)
-    self.greenTank = Tank(CellType.GreenTankBody)
-    self.blueTank = Tank(CellType.BlueTankBody)
+    self.greenTank = Tank(CellType.GreenTankBody, self.grid.green_start)
+    self.blueTank = Tank(CellType.BlueTankBody, self.grid.blue_start)
     self.shots = Shots(self.grid)
     self.sessions = []
   
