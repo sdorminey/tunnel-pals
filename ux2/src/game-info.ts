@@ -4,7 +4,8 @@ export enum CellType {
   LightSand = 1,
   DarkSand = 2,
   GreenTankBody = 3,
-  Shot
+  Shot = 4,
+  BlueTankBody = 5
 }
 
 export enum CellMoveType {
@@ -46,6 +47,8 @@ export class GameInfo {
         return "#00ff00";
       case CellType.Shot:
         return "#ff0000";
+      case CellType.BlueTankBody:
+        return "#0000ff";
     }
   }
 

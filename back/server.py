@@ -34,17 +34,20 @@ class Session:
 class Game:
   def __init__(self):
     self.grid = Grid(128, 128)
-    self.tank = Tank(CellType.GreenTankBody)
+    self.greenTank = Tank(CellType.GreenTankBody)
+    self.blueTank = Tank(CellType.BlueTankBody)
     self.shots = Shots(self.grid)
     self.sessions = []
   
   async def run(self):
     while True:
-      moved = self.tank.tick(self.grid)
-      if self.tank.shooting:
-        self.tank.shooting = False
-        dX, dY = self.tank.direction.gunOffset
-        self.shots.add_shot(self.tank.x + dX, self.tank.y + dY, self.tank.direction)
+      moved = False
+      for tank in [self.greenTank, self.blueTank]:
+        moved = moved or tank.tick(self.grid)
+        if tank.shooting:
+          tank.shooting = False
+          dX, dY = tank.direction.gunOffset
+          self.shots.add_shot(tank.x + dX, tank.y + dY, tank.direction)
 
       self.shots.tick()
       updates = self.grid.get_updates()
@@ -53,28 +56,32 @@ class Game:
       updates.clear()
       await asyncio.sleep(0.025)
 
-  async def accept(self, websocket : websockets.WebSocketServerProtocol, path):
-    s = Session(websocket, self.tank)
+  async def accept(self, websocket : websockets.WebSocketServerProtocol, path: str):
+    await websocket.send(json.dumps({
+      "type": MessageType.Hi.value
+    }))
+
+    loginMsg = json.loads(await websocket.recv())
+    tank = self.blueTank if loginMsg["tankName"] == "#blue" else self.greenTank
+    s = Session(websocket, tank)
     self.sessions.append(s)
     try:
       gridMessage = {
         "type": MessageType.GameInit.value,
         "rows": self.grid.rows,
         "cols": self.grid.cols,
-        "grid": [g.value for g in self.grid.grid],
-        "tankX": self.tank.x,
-        "tankY": self.tank.y,
-        "tankDirection": self.tank.direction.value
+        "grid": [g.value for g in self.grid.grid]
       }
 
       await websocket.send(json.dumps(gridMessage))
+
       while True:
         message = json.loads(await websocket.recv())
         if message["type"] == MessageType.TankInput.value:
-          self.tank.nextDirection = TankDirection(message["direction"]) if "direction" in message and message["direction"] else None
-          self.tank.moving = self.tank.nextDirection
+          s.tank.nextDirection = TankDirection(message["direction"]) if "direction" in message and message["direction"] else None
+          s.tank.moving = s.tank.nextDirection
         if message["type"] == MessageType.TankShoot.value:
-          self.tank.shooting = True
+          s.tank.shooting = True
     finally:
       self.sessions.remove(s)
 

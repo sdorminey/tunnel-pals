@@ -114,6 +114,7 @@ class Sprites:
 
 
 class MessageType(Enum):
+  Hi = 0
   GameInit = 1
   TankInput = 2
   TankMove = 3

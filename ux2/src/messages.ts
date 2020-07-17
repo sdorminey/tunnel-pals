@@ -12,15 +12,21 @@ export enum TankDirection {
 }
 
 export enum MessageType {
+  Hi = 0,
   GridData = 1,
   TankInput,
   TankMove,
   GridUpdates,
-  TankShoot
+  TankShoot,
+  Login
 }
 
 export class BaseMessage {
   type: MessageType;
+}
+
+export class LoginMessage extends BaseMessage {
+  tankName: string;
 }
 
 export class GridDataMessage extends BaseMessage {

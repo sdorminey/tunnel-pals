@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import { InputController } from './input';
 import GameGrid from './game-grid';
-import { BaseMessage, MessageType, GridDataMessage, TankMoveMessage, TankInputMessage, GridUpdatesMessage } from './messages';
+import { BaseMessage, MessageType, GridDataMessage, TankMoveMessage, TankInputMessage, GridUpdatesMessage, LoginMessage } from './messages';
 import Tank from './tank';
 
 class Game {
@@ -11,11 +11,13 @@ class Game {
   private readonly ctx: CanvasRenderingContext2D;
   private readonly controller: InputController;
   private readonly ws: WebSocket;
+  private readonly tankName: string;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, tankName: string) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.controller = new InputController();
+    this.tankName = tankName;
     this.ws = new WebSocket("ws://127.0.0.1:8080/back");
     this.ws.onmessage = (event) => this.onMessage(event);
   }
@@ -54,13 +56,21 @@ class Game {
   private start(): void {
     window.addEventListener("keydown", (event) => this.handleInput(event), true);
     window.addEventListener("keyup", (event) => this.handleInput(event), true);
-    game.render();
-    window.setInterval(() => game.updateLoop(), 25);
+    this.render();
+    window.setInterval(() => this.updateLoop(), 25);
   }
 
   private onMessage(event: MessageEvent): void {
     const untyped = <BaseMessage>(JSON.parse(event.data));
     switch (untyped.type) {
+      case MessageType.Hi:
+        {
+          this.ws.send(JSON.stringify(<LoginMessage>{
+            type: MessageType.Login,
+            tankName: this.tankName
+          }));
+          break;
+        }
       case MessageType.GridData:
         {
           const message = <GridDataMessage>(untyped);
@@ -97,4 +107,4 @@ class Game {
 }
 
 const c = document.getElementById('canvas') as HTMLCanvasElement;
-const game = new Game(c);
+const game = new Game(c, window.location.hash);
