@@ -96,7 +96,7 @@ class Game:
       self.sessions.remove(s)
 
 g = Game()
-start_server = websockets.serve(g.accept, "localhost", 8765)
+start_server = websockets.serve(g.accept, "0.0.0.0", 8765)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().create_task(g.run())
