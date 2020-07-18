@@ -3,10 +3,13 @@ import { InputController } from './input';
 import GameGrid from './game-grid';
 import { BaseMessage, MessageType, GridDataMessage, TankMoveMessage, TankInputMessage, GridUpdatesMessage, LoginMessage } from './messages';
 import Tank from './tank';
+import { Prediction } from './prediction';
 
 class Game {
   private readonly canvas: HTMLCanvasElement;
   private grid: GameGrid;
+  private predictiveGrid: GameGrid;
+  private prediction: Prediction;
   private tank: Tank;
   private readonly ctx: CanvasRenderingContext2D;
   private readonly controller: InputController;
@@ -25,11 +28,11 @@ class Game {
   public render(): void {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.resetTransform();
-    var [spriteX, spriteY] = this.grid.coordsCellToPixel(this.tank.x, this.tank.y);
-    let cameraX = Math.min(Math.max(0, spriteX - this.canvas.width / 2), this.grid.maxX - this.canvas.width);
-    let cameraY = Math.min(Math.max(0, spriteY - this.canvas.height / 2), this.grid.maxY - this.canvas.height);
+    var [spriteX, spriteY] = this.predictiveGrid.coordsCellToPixel(this.tank.x, this.tank.y);
+    let cameraX = Math.min(Math.max(0, spriteX - this.canvas.width / 2), this.predictiveGrid.maxX - this.canvas.width);
+    let cameraY = Math.min(Math.max(0, spriteY - this.canvas.height / 2), this.predictiveGrid.maxY - this.canvas.height);
     this.ctx.translate(-cameraX, -cameraY);
-    this.grid.render(this.ctx);
+    this.predictiveGrid.render(this.ctx);
     document.getElementById("#hp").innerText = this.tank.hp.toString();
     document.getElementById("#power").innerText = this.tank.power.toString();
     //this.tank.render(this.ctx);
@@ -37,6 +40,7 @@ class Game {
 
   public updateLoop(): void {
     this.render();
+    this.prediction.moveTank(this.tank, this.controller.getTankDirection());
   }
 
   private handleInput(event: KeyboardEvent): void {
@@ -77,6 +81,8 @@ class Game {
         {
           const message = <GridDataMessage>(untyped);
           this.grid = new GameGrid(message.rows, message.cols, message.grid);
+          this.predictiveGrid = new GameGrid(message.rows, message.cols, [...message.grid]);
+          this.prediction = new Prediction(this.predictiveGrid);
           this.tank = new Tank(this.grid);
           this.tank.x = message.tankX;
           this.tank.y = message.tankY;
@@ -100,6 +106,7 @@ class Game {
           for (let update of message.updates) {
             this.grid.setCell(update.x, update.y, update.type);
           }
+          this.predictiveGrid.set(this.grid);
           break;
         }
       default:

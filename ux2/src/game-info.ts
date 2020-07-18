@@ -1,3 +1,5 @@
+import { TankDirection } from "./messages";
+
 export enum CellType {
   Transparent = -1,
   Void = 0,
@@ -61,16 +63,16 @@ export class GameInfo {
     }
   }
 
-  public static getMoveDirection(dir: TankAction): [number, number] {
+  public static getMoveDirection(dir: TankDirection): [number, number] {
     switch (dir) {
-      case TankAction.MoveUp: return [0, -1];
-      case TankAction.MoveDown: return [0, 1];
-      case TankAction.MoveRight: return [1, 0];
-      case TankAction.MoveLeft: return [-1, 0];
-      case TankAction.MoveDownLeft: return [-1, 1];
-      case TankAction.MoveDownRight: return [1, 1];
-      case TankAction.MoveUpLeft: return [-1, -1];
-      case TankAction.MoveUpRight: return [1, -1];
+      case TankDirection.Up: return [0, -1];
+      case TankDirection.Down: return [0, 1];
+      case TankDirection.Right: return [1, 0];
+      case TankDirection.Left: return [-1, 0];
+      case TankDirection.DownLeft: return [-1, 1];
+      case TankDirection.DownRight: return [1, 1];
+      case TankDirection.UpLeft: return [-1, -1];
+      case TankDirection.UpRight: return [1, -1];
       default:
         return [0, 0];
     }

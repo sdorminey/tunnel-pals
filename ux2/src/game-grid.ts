@@ -15,6 +15,12 @@ export default class GameGrid {
     //}
   }
 
+  public set(other: GameGrid): void {
+    for (let k = 0; k < other.data.length; k++) {
+      this.data[k] = other.data[k];
+    }
+  }
+
   public coordsCellToPixel(pixelX: number, pixelY: number): [number, number] {
     return [pixelX * CELL_SIZE, pixelY * CELL_SIZE];
   }
@@ -47,6 +53,14 @@ export default class GameGrid {
     for (let row = 0; row < sprite.length / stride; row++) {
       for (let col = 0; col < stride; col++) {
         this.drawCell(ctx, col + x, row + y, sprite[row * stride + col]);
+      }
+    }
+  }
+
+  public setSprite(x: number, y: number, sprite: CellType[], stride: number) {
+    for (let row = 0; row < sprite.length / stride; row++) {
+      for (let col = 0; col < stride; col++) {
+        this.data[(row + y) * this.rows + (col + x)] = sprite[row * stride + col];
       }
     }
   }

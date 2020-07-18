@@ -1,4 +1,5 @@
 import { CellType, TankAction } from './game-info';
+import { TankDirection } from './messages';
 
 export default class Sprites {
   public static readonly tankRight: CellType[] = [
@@ -48,6 +49,19 @@ export default class Sprites {
     CellType.GreenTankBody, CellType.GreenTankBody, CellType.Transparent,
     CellType.GreenTankBody, CellType.Transparent, CellType.GreenTankBody,
   ];
+
+  public static tankSpriteForDirection(direction: TankDirection): CellType[] {
+    switch (direction) {
+      case TankDirection.Up: return Sprites.tankUp;
+      case TankDirection.Down: return Sprites.tankDown;
+      case TankDirection.Left: return Sprites.tankLeft;
+      case TankDirection.Right: return Sprites.tankLeft;
+      case TankDirection.UpLeft: return Sprites.tankUpLeft;
+      case TankDirection.UpRight: return Sprites.tankUpRight;
+      case TankDirection.DownLeft: return Sprites.tankDownLeft;
+      case TankDirection.DownRight: return Sprites.tankDownRight;
+    }
+  }
 
   public static getGunOffset(direction: TankAction): [number, number] {
     switch (direction) {
