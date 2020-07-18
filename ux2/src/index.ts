@@ -18,7 +18,7 @@ class Game {
     this.ctx = canvas.getContext("2d");
     this.controller = new InputController();
     this.tankName = tankName;
-    this.ws = new WebSocket("ws://127.0.0.1:8080/back");
+    this.ws = new WebSocket(`ws://${window.location.hostname}:8765/back`);
     this.ws.onmessage = (event) => this.onMessage(event);
   }
 
