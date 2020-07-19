@@ -12,6 +12,7 @@ class Game {
   private predictiveGrid: GameGrid;
   private prediction: Prediction;
   private tank: Tank;
+  private receivedRealFrame = false;
   private readonly ctx: CanvasRenderingContext2D;
   private readonly controller: InputController;
   private readonly ws: WebSocket;
@@ -47,12 +48,15 @@ class Game {
   }
 
   public updateLoop(): void {
-    const predictionElement = <HTMLInputElement>(document.getElementById("prediction"));
-    if (predictionElement.checked) {
-      this.prediction.moveTank(this.tank, this.controller.getTankDirection());
+    if (!this.receivedRealFrame) {
+      const predictionElement = <HTMLInputElement>(document.getElementById("prediction"));
+      if (predictionElement.checked) {
+        this.prediction.moveTank(this.tank, this.controller.getTankDirection());
+      }
     }
 
     this.render();
+    this.receivedRealFrame = false;
   }
 
   private handleInput(event: KeyboardEvent): void {
@@ -119,6 +123,7 @@ class Game {
             this.grid.setCell(update.x, update.y, update.type);
           }
           this.predictiveGrid.set(this.grid);
+          this.receivedRealFrame = true;
           break;
         }
       default:
