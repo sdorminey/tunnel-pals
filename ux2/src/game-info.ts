@@ -36,8 +36,11 @@ export class GameInfo {
     switch (type) {
       case CellType.Void:
         return CellMoveType.None;
-      default:
+      case CellType.LightSand:
+      case CellType.DarkSand:
         return CellMoveType.SlowsTank;
+      default:
+        return CellMoveType.Unbreakable;
     }
   }
 
