@@ -95,7 +95,7 @@ class Grid:
 
   def survey_cells(self, x: int, y: int, w = 1, h = 1) -> set(CellType):
     kinds = set()
-    for col in range(x, x + w):
-      for row in range(y, y + h):
+    for col in range(x, x + w + 1):
+      for row in range(y, y + h + 1):
         kinds.add(self.grid[row * self.rows + col])
     return kinds
