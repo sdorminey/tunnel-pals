@@ -83,7 +83,7 @@ class Game {
           this.grid = new GameGrid(message.rows, message.cols, message.grid);
           this.predictiveGrid = new GameGrid(message.rows, message.cols, [...message.grid]);
           this.prediction = new Prediction(this.predictiveGrid);
-          this.tank = new Tank(this.grid);
+          this.tank = new Tank();
           this.tank.x = message.tankX;
           this.tank.y = message.tankY;
           this.tank.direction = message.tankDirection;
