@@ -52,7 +52,7 @@ class Grid:
     while True:
       x = random.randint(ROCK_WALL_SIZE, self.cols - ROCK_WALL_SIZE - BASE_WIDTH)
       y = random.randint(ROCK_WALL_SIZE, self.rows - ROCK_WALL_SIZE - BASE_HEIGHT)
-      survey = self.survey_cells(x - BASE_MARGIN, y - BASE_MARGIN, BASE_WIDTH + BASE_MARGIN, BASE_HEIGHT + BASE_MARGIN)
+      survey = self.survey_cells(x - BASE_MARGIN, y - BASE_MARGIN, BASE_WIDTH + 2 * BASE_MARGIN, BASE_HEIGHT + 2 * BASE_MARGIN)
       if not CellType.ChargePad in survey and not CellType.BlueWall in survey and not CellType.GreenWall in survey:
         return (x, y)
 

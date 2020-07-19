@@ -47,11 +47,12 @@ class Game {
   }
 
   public updateLoop(): void {
-    this.render();
     const predictionElement = <HTMLInputElement>(document.getElementById("prediction"));
     if (predictionElement.checked) {
       this.prediction.moveTank(this.tank, this.controller.getTankDirection());
     }
+
+    this.render();
   }
 
   private handleInput(event: KeyboardEvent): void {
