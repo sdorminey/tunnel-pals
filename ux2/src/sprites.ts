@@ -55,7 +55,7 @@ export default class Sprites {
       case TankDirection.Up: return Sprites.tankUp;
       case TankDirection.Down: return Sprites.tankDown;
       case TankDirection.Left: return Sprites.tankLeft;
-      case TankDirection.Right: return Sprites.tankLeft;
+      case TankDirection.Right: return Sprites.tankRight;
       case TankDirection.UpLeft: return Sprites.tankUpLeft;
       case TankDirection.UpRight: return Sprites.tankUpRight;
       case TankDirection.DownLeft: return Sprites.tankDownLeft;
