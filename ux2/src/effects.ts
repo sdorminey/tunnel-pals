@@ -14,11 +14,7 @@ export default class Effects {
   }
 
   public shouldStatic(power: number): boolean {
-    if (power >= NO_STATIC_ABOVE) {
-      return false;
-    }
-
-    return power <= Math.random()*100;
+    return power/100 <= Math.log2(Math.random()*1024)/Math.log2(1024);
   }
 
   public drawStatic(): void {
