@@ -17,25 +17,28 @@ export class Prediction {
     }
 
     tank.direction = direction;
+    this.grid.clearCell(tank.x, tank.y, 3, 3);
     const [dX, dY] = GameInfo.getMoveDirection(direction);
     const moveType = this.grid.canMoveThroughBox(tank.x + dX, tank.y + dY, 3, 3);
+    const sprite = Sprites.tankSpriteForDirection(tank.direction);
     switch (moveType) {
+      case CellMoveType.None:
+        tank.x += dX; tank.y += dY;
+        break;
       case CellMoveType.Unbreakable:
-        return;
+        break;
       case CellMoveType.SlowsTank:
         {
           if (!tank.delay) {
             tank.delay = 3;
-            break;
+            tank.x += dX; tank.y += dY;
           } else {
             tank.delay--;
-            return;
           }
+          break;
         }
     }
-    this.grid.clearCell(tank.x, tank.y, 3, 3);
-    tank.x += dX; tank.y += dY;
-    const sprite = Sprites.tankSpriteForDirection(tank.direction);
+
     this.grid.setSprite(tank.x, tank.y, sprite, 3);
   }
 }

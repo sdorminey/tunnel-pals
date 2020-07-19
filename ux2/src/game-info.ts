@@ -35,6 +35,7 @@ export class GameInfo {
   public static moveTypeForCell(type: CellType): CellMoveType {
     switch (type) {
       case CellType.Void:
+      case CellType.ChargePad:
         return CellMoveType.None;
       case CellType.LightSand:
       case CellType.DarkSand:
