@@ -1,6 +1,7 @@
 import asyncio
 import websockets
 import json
+import logging
 
 from contract import *
 from grid import Grid
@@ -60,14 +61,22 @@ class Game:
 
       updates = self.grid.get_updates()
       for session in self.sessions:
-        await session.update(moved, updates)
+        try:
+          await session.update(moved, updates)
+        except:
+          logging.warn("Error pushing to client!")
       updates.clear()
       await asyncio.sleep(0.025)
 
   async def accept(self, websocket : websockets.WebSocketServerProtocol, path: str):
-    await websocket.send(json.dumps({
-      "type": MessageType.Hi.value
-    }))
+    logging.info("Someone joined the game!")
+    try:
+      await websocket.send(json.dumps({
+        "type": MessageType.Hi.value
+      }))
+    except:
+      logging.warn("Error sending hello!")
+      return
 
     loginMsg = json.loads(await websocket.recv())
     tank = self.blueTank if loginMsg["tankName"] == "#blue" else self.greenTank
