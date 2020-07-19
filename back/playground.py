@@ -8,6 +8,7 @@ octaves = 6
 persistence = 0.5
 lacunarity = 2.0
 
+plt.
 world = np.zeros(shape)
 for i in range(shape[0]):
         for j in range(shape[1]):
