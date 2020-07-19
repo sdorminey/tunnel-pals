@@ -4,6 +4,7 @@ import GameGrid from './game-grid';
 import { BaseMessage, MessageType, GridDataMessage, TankMoveMessage, TankInputMessage, GridUpdatesMessage, LoginMessage } from './messages';
 import Tank from './tank';
 import { Prediction } from './prediction';
+import Effects from './effects';
 
 class Game {
   private readonly canvas: HTMLCanvasElement;
@@ -15,10 +16,12 @@ class Game {
   private readonly controller: InputController;
   private readonly ws: WebSocket;
   private readonly tankName: string;
+  private readonly effects: Effects;
 
   constructor(canvas: HTMLCanvasElement, tankName: string) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
+    this.effects = new Effects(this.ctx, this.canvas.width, this.canvas.height);
     this.controller = new InputController();
     this.tankName = tankName;
     this.ws = new WebSocket(`ws://${window.location.hostname}:8765/back`);
@@ -26,6 +29,11 @@ class Game {
   }
 
   public render(): void {
+    if (this.effects.shouldStatic(this.tank.power)) {
+      this.effects.drawStatic();
+      return;
+    }
+
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.resetTransform();
     var [spriteX, spriteY] = this.predictiveGrid.coordsCellToPixel(this.tank.x, this.tank.y);
