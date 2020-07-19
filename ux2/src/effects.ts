@@ -1,6 +1,3 @@
-import GameGrid from "./game-grid";
-
-const NO_STATIC_ABOVE = 50;
 const CELL_SIZE = 8;
 const STATIC_DURATION = 8;
 export default class Effects {
