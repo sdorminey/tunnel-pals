@@ -88,7 +88,7 @@ class Grid:
       self.grid[row * self.rows + col] = sprite[k]
       self.updates.append((col, row, sprite[k]))
 
-  def can_move_through_box(self, x: int, y: int, w = 1, h = 1) -> CellMoveType:
+  def can_move_through_box(self, x: int, y: int, w = 1, h = 1) -> MoveType:
     if x < 0 or y < 0 or x+w > self.cols or y+h > self.rows:
       return MoveType.Unbreakable
     return MoveType(max([self.grid[row * self.rows + col].move_type.value for row in range(y, y + h) for col in range(x, x + h)]))
