@@ -76,7 +76,7 @@ class Tank:
 
     charging = CellType.ChargePad in grid.survey_cells(self.x - 1, self.y - 1, 4, 4)
     if charging:
-      self.realpower = max(self.realpower + CHARGE_PER_TICK, MAX_REAL_POWER)
+      self.realpower = min(self.realpower + CHARGE_PER_TICK, MAX_REAL_POWER)
     else:
       self.realpower -= DRAIN_PER_TICK
     
