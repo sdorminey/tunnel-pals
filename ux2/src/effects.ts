@@ -2,10 +2,13 @@ import GameGrid from "./game-grid";
 
 const NO_STATIC_ABOVE = 50;
 const CELL_SIZE = 8;
+const STATIC_DURATION = 8;
 export default class Effects {
   private readonly ctx: CanvasRenderingContext2D;
   private readonly width: number;
   private readonly height: number;
+  private isStatic = false;
+  private staticLocked = 0;
 
   constructor(ctx: CanvasRenderingContext2D, width: number, height: number) {
     this.ctx = ctx;
@@ -14,7 +17,14 @@ export default class Effects {
   }
 
   public shouldStatic(power: number): boolean {
-    return Math.random() >= Math.log2(power)/Math.log2(100);
+    if (!this.staticLocked) {
+      this.staticLocked = STATIC_DURATION;
+      this.isStatic = Math.random() >= Math.log2(power)/Math.log2(100);
+    } else {
+      this.staticLocked--;
+    }
+
+    return this.isStatic;
   }
 
   public drawStatic(): void {
