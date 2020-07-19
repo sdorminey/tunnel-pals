@@ -40,7 +40,7 @@ class Game {
     let cameraX = Math.min(Math.max(0, spriteX - this.canvas.width / 2), this.predictiveGrid.maxX - this.canvas.width);
     let cameraY = Math.min(Math.max(0, spriteY - this.canvas.height / 2), this.predictiveGrid.maxY - this.canvas.height);
     this.ctx.translate(-cameraX, -cameraY);
-    this.predictiveGrid.render(this.ctx);
+    this.predictiveGrid.render(this.ctx, cameraX, cameraY, this.canvas.width, this.canvas.height);
     document.getElementById("#hp").innerText = this.tank.hp.toString();
     document.getElementById("#power").innerText = this.tank.power.toString();
     //this.tank.render(this.ctx);

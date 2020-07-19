@@ -1,6 +1,7 @@
 import { CellType, GameInfo, CellMoveType } from './game-info';
 
 const CELL_SIZE = 8;
+const RENDER_MARGIN = 2;
 export default class GameGrid {
   private readonly data: Array<CellType>;
   private readonly rows: number;
@@ -74,8 +75,19 @@ export default class GameGrid {
     ctx.fillRect(CELL_SIZE * x, CELL_SIZE * y, CELL_SIZE, CELL_SIZE);
   }
 
-  public render(ctx: CanvasRenderingContext2D): void {
-    this.drawSprite(ctx, 0, 0, this.data, this.cols);
+  public render(ctx: CanvasRenderingContext2D, cameraX: number, cameraY: number, cameraW: number, cameraH: number): void {
+    var [cellX, cellY] = this.coordsPixelToCell(cameraX, cameraY);
+    var [cellW, cellH] = this.coordsPixelToCell(cameraW, cameraH);
+    cellX = Math.max(cellX - RENDER_MARGIN, 0); cellY = Math.max(cellY - RENDER_MARGIN, 0);
+    let cellMaxX = Math.min(cellX + cellW + RENDER_MARGIN, this.cols);
+    let cellMaxY = Math.min(cellY + cellH + RENDER_MARGIN, this.rows);
+    for (let row = cellY; row < cellMaxY; row++) {
+      for (let col = cellX; col < cellMaxX; col++) {
+        let type = this.data[row * this.rows + col];
+        ctx.fillStyle = GameInfo.colorForCell(type);
+        ctx.fillRect(CELL_SIZE * col, CELL_SIZE * row, CELL_SIZE, CELL_SIZE);
+      }
+    }
   }
 
   public canMoveThroughBox(x: number, y: number, w = 1, h = 1): CellMoveType {
