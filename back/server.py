@@ -75,11 +75,8 @@ class Game:
 
     # On TankInput, flag the tank so it moves where the player wants it to.
     if message["type"] == MessageType.TankInput.value:
-      if "direction" in message and message["direction"]:
-        tank.nextDirection = TankDirection(message["direction"])
-        tank.nextX = message["x"]
-        tank.nextY = message["y"]
-        tank.moving = tank.nextDirection
+      tank.nextDirection = TankDirection(message["direction"]) if "direction" in message and message["direction"] else None
+      tank.moving = tank.nextDirection
 
     # On TankShoot, flag the tank as shooting.
     if message["type"] == MessageType.TankShoot.value:

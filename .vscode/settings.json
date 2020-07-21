@@ -1,5 +1,4 @@
 {
     "editor.tabSize": 2,
-    "python.pythonPath": "/nix/store/vs4vj1yzqj1bkcqkf3b6sxm6jfy1gb4j-python3-3.7.7/bin/python",
-    "window.zoomLevel": 2
+    "python.pythonPath": "/nix/store/vs4vj1yzqj1bkcqkf3b6sxm6jfy1gb4j-python3-3.7.7/bin/python"
 }
