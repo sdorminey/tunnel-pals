@@ -5,6 +5,7 @@ import { BaseMessage, MessageType, GridDataMessage, TankMoveMessage, TankInputMe
 import Tank from './tank';
 import { Prediction } from './prediction';
 import Effects from './effects';
+import { CellType } from './game-info';
 
 class Game {
   private readonly canvas: HTMLCanvasElement;
@@ -52,12 +53,12 @@ class Game {
   }
 
   public updateLoop(): void {
-    if (!this.receivedRealFrame) {
-      const predictionElement = <HTMLInputElement>(document.getElementById("prediction"));
-      if (predictionElement.checked) {
-        this.prediction.moveTank(this.tank, this.controller.getTankDirection());
-      }
+    //if (!this.receivedRealFrame) {
+    const predictionElement = <HTMLInputElement>(document.getElementById("prediction"));
+    if (predictionElement.checked) {
+      this.prediction.moveTank(this.tank, this.controller.getTankDirection());
     }
+    //}
 
     this.render();
     this.receivedRealFrame = false;
@@ -66,10 +67,14 @@ class Game {
   private handleInput(event: KeyboardEvent): void {
     this.controller.receiveInput(event);
     const direction = this.controller.getTankDirection();
-    this.ws.send(JSON.stringify(<TankInputMessage>{
-      direction: direction,
-      type: MessageType.TankInput
-    }));
+    if (this.tank.x && this.tank.y) {
+      this.ws.send(JSON.stringify(<TankInputMessage>{
+        direction: direction,
+        type: MessageType.TankInput,
+        x: this.tank.x,
+        y: this.tank.y
+      }));
+    }
 
     const shooting = this.controller.isShooting();
     if (shooting) {
@@ -113,9 +118,11 @@ class Game {
       case MessageType.TankMove:
         {
           const message = <TankMoveMessage>(untyped);
-          this.tank.direction = message.direction;
-          this.tank.x = message.x;
-          this.tank.y = message.y;
+          if (!this.tank.x || !this.tank.y || !this.tank.direction) {
+            this.tank.direction = message.direction;
+            this.tank.x = message.x;
+            this.tank.y = message.y;
+          }
           this.tank.hp = message.hp;
           this.tank.power = message.power;
           break;
@@ -124,7 +131,10 @@ class Game {
         {
           const message = <GridUpdatesMessage>(untyped);
           for (let update of message.updates) {
-            this.grid.setCell(update.x, update.y, update.type);
+            const ourTankType = this.tankName == "#blue" ? CellType.BlueTankBody : CellType.GreenTankBody;
+            if (update.type != ourTankType) {
+              this.grid.setCell(update.x, update.y, update.type);
+            }
           }
           this.predictiveGrid.set(this.grid);
           this.receivedRealFrame = true;

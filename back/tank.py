@@ -38,6 +38,8 @@ class Tank:
     self.state.y = y
     self.prevState = None
     self.nextDirection = None
+    self.nextX = None
+    self.nextY = None
     self.moving = False
     self.delay = 0
     self.shooting = False
@@ -104,6 +106,10 @@ class Tank:
       self.new = False
       grid.set_sprite(self.state.x, self.state.y, Sprites.tank(self.state.direction, self.color), 3)
 
+    if self.nextX and self.nextY:
+      self.state.x = self.nextX
+      self.state.y = self.nextY
+
     # Movement:
     if self.moving:
       # First draw void under the tank.
@@ -111,21 +117,11 @@ class Tank:
       grid.set_cells(self.x, self.y, CellType.Void, 3, 3)
 
       # Check the next box where the sprite lives for collision.
-      dX, dY = self.state.direction.delta
-      moveKind = grid.can_move_through_box(self.state.x + dX, self.state.y + dY, 3, 3)
-
-      # Moving through the void is a free action.
-      if moveKind == MoveType.Free:
-        self.state.x += dX; self.state.y += dY
+      moveKind = grid.can_move_through_box(self.state.x, self.state.y, 3, 3)
 
       # Moving through dirt is slow, so it drains extra power and only happens every third tick.
       if moveKind == MoveType.Slow:
-        if not self.delay:
-          self.delay = 3
-          self.state.x += dX; self.state.y += dY
           self.realpower -= DRAIN_FROM_MOVING
-        else:
-          self.delay -= 1
       
       # Redraw the tank wherever it ended up.
       grid.set_sprite(self.state.x, self.state.y, Sprites.tank(self.state.direction, self.color), 3)
