@@ -44,6 +44,7 @@ class Tank:
     self.color = color
     self.hits = 0
     self.realpower = MAX_REAL_POWER
+    self.new = True
   
   def has_update(self) -> bool:
     return self.state != self.prevState
@@ -97,6 +98,11 @@ class Tank:
     # If we're shooting, we drain.
     if self.shooting:
       self.realpower -= DRAIN_FROM_SHOOTING
+
+    # We have to draw initially or we'll never see the tank until we move.
+    if self.new:
+      self.new = False
+      grid.set_sprite(self.state.x, self.state.y, Sprites.tank(self.state.direction, self.color), 3)
 
     # Movement:
     if self.moving:
