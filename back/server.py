@@ -10,6 +10,11 @@ from shots import Shots
 from tank import Tank
 from session import Session
 
+class FrameResult(Enum):
+  Active = 0
+  BlueWins = 1
+  GreenWins = 2
+
 class Game:
   """A game lasts until one of the players dies."""
 
@@ -19,7 +24,7 @@ class Game:
     self.greenTank = Tank(CellType.GreenTankBody, self.grid.green_start)
     self.blueTank = Tank(CellType.BlueTankBody, self.grid.blue_start)
 
-  async def run_frame(self, sessions: List[Session]):
+  async def run_frame(self, sessions: List[Session]) -> FrameResult:
     """Runs a single tick of the game."""
 
     moved = False
@@ -53,9 +58,14 @@ class Game:
         logging.warn("Error pushing to client!")
     updates.clear()
 
+    if self.greenTank.dead:
+      return FrameResult.BlueWins
+    if self.blueTank.dead:
+      return FrameResult.GreenWins
+    return FrameResult.Active
+
   async def on_session_join(self, session):
     # Send the grid and the current tank x/y/direction.
-    await session.send_grid(self.grid)
     await session.send_tankmove(self.blueTank if session.isBlue else self.greenTank)
 
   def receive(self, session, message):
@@ -81,17 +91,41 @@ class Match:
     logging.info("Grid generation complete!")
     self.sessions = []
     self.game = Game(self.grid)
+    self.bluePoints = 0
+    self.greenPoints = 0
 
   async def run(self):
     while True:
+      # Run the game until someone wins.
+      result = await self._run_game()
+
+      # Update the scoreboard and send it to everyone.
+      if result == FrameResult.BlueWins:
+        self.bluePoints += 1
+      elif result == FrameResult.GreenWins:
+        self.greenPoints += 1
+      for session in self.sessions:
+        await session.send_score(self.bluePoints, self.greenPoints)
+
+      self.grid.cleanup_after_game()
+      self.game = Game(self.grid)
+
+  async def _run_game(self):
+    """Run the game until someone wins."""
+
+    while True:
       # Tick the game every 25ms.
-      await self.game.run_frame(self.sessions)
+      result = await self.game.run_frame(self.sessions)
+      if result != FrameResult.Active:
+        return result
       await asyncio.sleep(0.025)
 
   async def process_session(self, session: Session):
     """Handles the entire lifetime of a session."""
 
     # Have the game send grid and tank location.
+    await session.send_grid(self.grid)
+    await session.send_score(self.bluePoints, self.greenPoints)
     await self.game.on_session_join(session)
 
     # Keep the session in the broadcast list and dispatch messages, for as long as it's alive.

@@ -18,6 +18,7 @@ export enum MessageType {
   TankMove,
   GridUpdates,
   TankShoot,
+  GameScore,
   Login
 }
 
@@ -52,4 +53,9 @@ export class TankMoveMessage extends BaseMessage {
 
 export class GridUpdatesMessage extends BaseMessage {
   updates: {x: number; y: number; type: CellType}[]
+}
+
+export class GameScoreMessage extends BaseMessage {
+  bluePoints: number;
+  greenPoints: number;
 }

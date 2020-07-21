@@ -18,6 +18,13 @@ class Session:
       "type": MessageType.Hi.value
     }))
 
+  async def send_score(self, bluePoints: int, greenPoints: int):
+    await self.socket.send(json.dumps({
+      "type": MessageType.GameScore.value,
+      "bluePoints": bluePoints,
+      "greenPoints": greenPoints
+    }))
+
   async def send_grid(self, grid: Grid):
     await self.socket.send(json.dumps({
       "type": MessageType.GameInit.value,

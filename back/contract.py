@@ -125,3 +125,4 @@ class MessageType(Enum):
   TankMove = 3
   GridUpdates = 4
   TankShoot = 5
+  GameScore = 6

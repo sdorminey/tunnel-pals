@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import { InputController } from './input';
 import GameGrid from './game-grid';
-import { BaseMessage, MessageType, GridDataMessage, TankMoveMessage, TankInputMessage, GridUpdatesMessage, LoginMessage } from './messages';
+import { BaseMessage, MessageType, GridDataMessage, TankMoveMessage, TankInputMessage, GridUpdatesMessage, LoginMessage, GameScoreMessage } from './messages';
 import Tank from './tank';
 import { Prediction } from './prediction';
 import Effects from './effects';
@@ -13,6 +13,8 @@ class Game {
   private prediction: Prediction;
   private tank: Tank;
   private receivedRealFrame = false;
+  private bluePoints = 0;
+  private greenPoints = 0;
   private readonly ctx: CanvasRenderingContext2D;
   private readonly controller: InputController;
   private readonly ws: WebSocket;
@@ -44,6 +46,8 @@ class Game {
     this.predictiveGrid.render(this.ctx, cameraX, cameraY, this.canvas.width, this.canvas.height);
     document.getElementById("#hp").innerText = this.tank.hp.toString();
     document.getElementById("#power").innerText = this.tank.power.toString();
+    document.getElementById("#bluepoints").innerText = this.bluePoints.toString();
+    document.getElementById("#greenpoints").innerText = this.greenPoints.toString();
     //this.tank.render(this.ctx);
   }
 
@@ -125,6 +129,12 @@ class Game {
           this.predictiveGrid.set(this.grid);
           this.receivedRealFrame = true;
           break;
+        }
+      case MessageType.GameScore:
+        {
+          const message = <GameScoreMessage>(untyped);
+          this.bluePoints = message.bluePoints;
+          this.greenPoints = message.greenPoints;
         }
       default:
         console.log("No idea what this message was!");
